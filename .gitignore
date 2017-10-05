@@ -56,3 +56,6 @@ dkms.conf
 *.vc*
 *.VC*
 .vs/
+*.tlog
+*build*
+*.log
