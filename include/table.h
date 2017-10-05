@@ -21,9 +21,9 @@
 #include <_null.h> /* NULL pointer constant is defined there */
 #endif
 
-/*   Source end-of-file (SEOF) sentinel symbol
-*    '\0' or only one of the folowing constants: 255, 0xFF , EOF
-*/
+#define SEOF 255
+
+#define PLATY_INT_MAX SHRT_MAX
 
 /*  Single-lexeme tokens processed separately one by one
 *  in the token-driven part of the scanner
@@ -33,32 +33,49 @@
 *  .AND., .OR. , SEOF, 'wrong symbol',
 */
 
-
-REPLACE *ESN* WITH YOUR ERROR STATE NUMBER
-#define ES  *ESN* /* Error state */
+#define ES  -255 /* Error state */
 #define IS -1    /* Inavalid state */
 
 /* State transition table definition */
 
-REPLACE *CN* WITH YOUR COLUMN NUMBER
-
-#define TABLE_COLUMNS *CN*
+#define TABLE_COLUMNS 7
 /*transition table - type of states defined in separate table */
 int  st_table[][TABLE_COLUMNS] = {
-	/* State 0 */{ YOUR INITIALIZATION },
-	/* State 1 */{ YOUR INITIALIZATION },
-	.
-	.YOUR TABLE INITIALIZATION HERE
-	.
-	/* State N */  {YOUR INITIALIZATION},
+	/* State 0  */  { INITIALIZE },
+	/* State 1  */  { INITIALIZE },
+	/* State 2  */	{ INITIALIZE },
+	/* State 3  */	{ INITIALIZE },
+	/* State 4  */	{ INITIALIZE },
+	/* State 5  */	{ INITIALIZE },
+	/* State 6  */	{ INITIALIZE },
+	/* State 7  */	{ INITIALIZE },
+	/* State 8  */	{ INITIALIZE },
+	/* State 9  */	{ INITIALIZE },
+	/* State 10 */	{ INITIALIZE },
+	/* State 11 */	{ INITIALIZE },
+	/* State 12 */	{ INITIALIZE },
+};
 
 	/* Accepting state table definition */
-	REPLACE *N1*, *N2*, and *N3* WITH YOUR NUMBERS
-#define ASWR     *N1*  /* accepting state with retract */
-#define ASNR     *N2*  /* accepting state with no retract */
-#define NOAS     *N3*  /* not accepting state */
+#define ASWR     1  /* accepting state with retract */
+#define ASNR     2  /* accepting state with no retract */
+#define NOAS     0  /* not accepting state */
 
-	int as_table[] = { YOUR INITIALIZATION HERE - USE ASWR, ASNR, NOAS };
+	int as_table[] = {
+		/* State 0  */	
+		/* State 1  */
+		/* State 2  */
+		/* State 3  */
+		/* State 4  */
+		/* State 5  */
+		/* State 6  */
+		/* State 7  */
+		/* State 8  */
+		/* State 9  */
+		/* State 10 */
+		/* State 11 */
+		/* State 12 */
+	};
 
 /* Accepting action function declarations */
 
@@ -66,7 +83,8 @@ FOR EACH OF YOUR ACCEPTING STATES YOU MUST PROVIDE
 ONE FUNCTION PROTOTYPE.THEY ALL RETURN Token AND TAKE
 ONE ARGUMENT : A string REPRESENTING A TOKEN LEXEME.
 
-Token aa_funcXX(char *lexeme);
+Token aa_func02(char *lexeme);
+Token aa_func03(char *lexeme);
 
 Replace XX with the number of the accepting state : 02, 03 and so on.
 
@@ -112,3 +130,4 @@ char * kw_table[] =
 };
 
 #endif
+ 

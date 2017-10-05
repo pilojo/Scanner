@@ -9,7 +9,7 @@
 #ifndef TOKEN_H_
 #define TOKEN_H_
 
-/*#pragma warning(1:4001) *//*to enforce C89 type comments  - to make //comments an warning */
+#pragma warning(1:4001) /*to enforce C89 type comments  - to make //comments an warning */
 
 							/*#pragma warning(error:4001)*//* to enforce C89 comments - to make // comments an error */
 
