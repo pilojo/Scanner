@@ -33,7 +33,7 @@
 *  .AND., .OR. , SEOF, 'wrong symbol',
 */
 
-#define ES  -255 /* Error state */
+#define ES  12 /* Error state */
 #define IS -1    /* Inavalid state */
 
 /* State transition table definition */
@@ -41,19 +41,20 @@
 #define TABLE_COLUMNS 7
 /*transition table - type of states defined in separate table */
 int  st_table[][TABLE_COLUMNS] = {
-	/* State 0  */  { INITIALIZE },
-	/* State 1  */  { INITIALIZE },
-	/* State 2  */	{ INITIALIZE },
-	/* State 3  */	{ INITIALIZE },
-	/* State 4  */	{ INITIALIZE },
-	/* State 5  */	{ INITIALIZE },
-	/* State 6  */	{ INITIALIZE },
-	/* State 7  */	{ INITIALIZE },
-	/* State 8  */	{ INITIALIZE },
-	/* State 9  */	{ INITIALIZE },
-	/* State 10 */	{ INITIALIZE },
-	/* State 11 */	{ INITIALIZE },
-	/* State 12 */	{ INITIALIZE },
+	/* State 0  */  { 1, 6, 4, 4, ES, ES, ES },
+	/* State 1  */  { 1, 1, 1, 1, 2, 3, 2 },
+	/* State 2  */	{ IS, IS, IS, IS, IS, IS, IS},
+	/* State 3  */	{ IS, IS, IS, IS, IS, IS, IS },
+	/* State 4  */	{ 5, 4, 4, 4, 7, 5, 5 },
+	/* State 5  */	{ IS, IS, IS, IS, IS, IS, IS },
+	/* State 6  */	{ ES, 9, 9, ES, 7, ES, 5 },
+	/* State 7  */	{ 8, 7, 7, 7, 8, 8, 8 },
+	/* State 8  */	{ IS, IS, IS, IS, IS, IS, IS },
+	/* State 9  */	{ ES, ES, 11, ES, ES, ES, 10},
+	/* State 10 */	{ IS, IS, IS, IS, IS, IS, IS },
+	/* State 11 */	{ ES, 11, 11, ES ,ES, ES, 10 },
+	/* State 12 */	{ IS, IS, IS, IS, IS, IS, IS },
+	/* State 13 */	{ ES, 9, 9, ES, 7, ES, 5 }
 };
 
 	/* Accepting state table definition */
@@ -62,31 +63,31 @@ int  st_table[][TABLE_COLUMNS] = {
 #define NOAS     0  /* not accepting state */
 
 	int as_table[] = {
-		/* State 0  */	
-		/* State 1  */
-		/* State 2  */
-		/* State 3  */
-		/* State 4  */
-		/* State 5  */
-		/* State 6  */
-		/* State 7  */
-		/* State 8  */
-		/* State 9  */
-		/* State 10 */
-		/* State 11 */
-		/* State 12 */
+		/* State 0  */	NOAS,
+		/* State 1  */	NOAS,
+		/* State 2  */	ASWR,
+		/* State 3  */	ASNR,
+		/* State 4  */	NOAS,
+		/* State 5  */	ASWR,
+		/* State 6  */	NOAS,
+		/* State 7  */	NOAS,
+		/* State 8  */	ASWR,
+		/* State 9  */	NOAS,
+		/* State 10 */	ASWR,	
+		/* State 11 */	NOAS,
+		/* State 12 */	ASNR,
+		/* State 13 */	ASWR
 	};
 
 /* Accepting action function declarations */
 
-FOR EACH OF YOUR ACCEPTING STATES YOU MUST PROVIDE
-ONE FUNCTION PROTOTYPE.THEY ALL RETURN Token AND TAKE
-ONE ARGUMENT : A string REPRESENTING A TOKEN LEXEME.
-
 Token aa_func02(char *lexeme);
 Token aa_func03(char *lexeme);
-
-Replace XX with the number of the accepting state : 02, 03 and so on.
+Token aa_func05(char *lexeme);
+Token aa_func08(char *lexeme);
+Token aa_func10(char *lexeme);
+Token aa_func12(char *lexeme);
+Token aa_func13(char *lexeme);
 
 /* defining a new type: pointer to function (of one char * argument)
 returning Token
@@ -101,13 +102,20 @@ typedef Token(*PTR_AAF)(char *lexeme);
 */
 
 PTR_AAF aa_table[] = {
-
-
-	HERE YOU MUST PROVIDE AN INITIALIZATION FOR AN ARRAY OF POINTERS
-	TO ACCEPTING FUNCTIONS.THE ARRAY HAS THE SAME SIZE AS as_table[].
-	YOU MUST INITIALIZE THE ARRAY ELEMENTS WITH THE CORRESPONDING
-	ACCEPTING FUNCTIONS(FOR THE STATES MARKED AS ACCEPTING IN as_table[]).
-	THE REST OF THE ELEMENTS MUST BE SET TO NULL.
+	
+	NULL,
+	aa_func02,
+	aa_func03,
+	NULL,
+	aa_func05,
+	NULL,
+	NULL,
+	aa_func08,
+	NULL,
+	aa_func10,
+	NULL,
+	aa_func12,
+	aa_func13
 
 };
 
