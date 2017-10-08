@@ -66,8 +66,7 @@ int scanner_init(Buffer * sc_buf) {
 						/*   scerrnum = 0;  *//*no need - global ANSI C */
 }
 
-Token malar_next_token(Buffer * sc_buf)
-{
+Token malar_next_token(Buffer * sc_buf){
 	Token t; /* token to return after recognition */
 	unsigned char c; /* input symbol */
 	int state = 0; /* initial state of the FSM */
@@ -191,8 +190,7 @@ Token malar_next_token(Buffer * sc_buf)
 				DO NOT MODIFY THE CODE OF THIS FUNCTION
 					YOU CAN REMOVE THE COMMENTS
 
-					int get_next_state(int state, char c, int *accept)
-				{
+				int get_next_state(int state, char c, int *accept){
 					int col;
 					int next;
 					col = char_class(c);
@@ -249,15 +247,7 @@ Token malar_next_token(Buffer * sc_buf)
 						return val;
 				}
 
-
-
-				HERE YOU WRITE THE DEFINITIONS FOR YOUR ACCEPTING FUNCTIONS.
-					************************************************************
-
-					ACCEPTING FUNCTION FOR THE arithmentic variable identifier AND keywords(VID - AVID / KW)
-					REPLACE XX WITH THE CORRESPONDING ACCEPTING STATE NUMBER
-
-					Token aa_funcXX(char lexeme[]) {
+				Token aa_func02(char lexeme[]) {
 
 					WHEN CALLED THE FUNCTION MUST
 						1. CHECK IF THE LEXEME IS A KEYWORD.
@@ -274,10 +264,7 @@ Token malar_next_token(Buffer * sc_buf)
 						return t;
 				}
 
-				ACCEPTING FUNCTION FOR THE string variable identifier(VID - SVID)
-					REPLACE XX WITH THE CORRESPONDING ACCEPTING STATE NUMBER
-
-					Token aa_funcXX(char lexeme[]) {
+				Token aa_func03(char lexeme[]) {
 
 					WHEN CALLED THE FUNCTION MUST
 						1. SET a SVID TOKEN.
@@ -290,9 +277,7 @@ Token malar_next_token(Buffer * sc_buf)
 						return t;
 				}
 
-				ACCEPTING FUNCTION FOR THE floating - point literal (FPL)
-
-					Token aa_funcXX(char lexeme[]) {
+				Token aa_func08(char lexeme[]) {
 
 					THE FUNCTION MUST CONVERT THE LEXEME TO A FLOATING POINT VALUE,
 						WHICH IS THE ATTRIBUTE FOR THE TOKEN.
@@ -306,9 +291,7 @@ Token malar_next_token(Buffer * sc_buf)
 						return t;
 				}
 
-				ACCEPTING FUNCTION FOR THE integer literal(IL)-decimal constant(DIL)
-
-					Token aa_funcXX(char lexeme[]) {
+				Token aa_func05(char lexeme[]) {
 
 					THE FUNCTION MUST CONVERT THE LEXEME REPRESENTING A DECIMAL CONSTANT
 						TO A DECIMAL INTEGER VALUE, WHICH IS THE ATTRIBUTE FOR THE TOKEN.
@@ -322,9 +305,7 @@ Token malar_next_token(Buffer * sc_buf)
 						return t;
 				}
 
-				ACCEPTING FUNCTION FOR THE integer literal(IL)-hexadecimal constant(HIL)
-
-					Token aa_funcXX(char lexeme[]) {
+				Token aa_func10(char lexeme[]) {
 
 					THE FUNCTION MUST CONVERT THE LEXEME REPRESENTING AN HEXADECIMAL CONSTANT
 						TO A DECIMAL INTEGER VALUE WHICH IS THE ATTRIBUTE FOR THE TOKEN.
@@ -342,9 +323,19 @@ Token malar_next_token(Buffer * sc_buf)
 						return t;
 				}
 
-				ACCEPTING FUNCTION FOR THE ERROR TOKEN
+				Token aa_func12(char lexeme[]) {
+					
+					THE FUNCTION SETS THE ERROR TOKEN.lexeme[] CONTAINS THE ERROR
+						THE ATTRIBUTE OF THE ERROR TOKEN IS THE lexeme ITSELF
+						AND IT MUST BE STORED in err_lex.IF THE ERROR lexeme IS LONGER
+						than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
+						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
+						err_lex C - type string.
+						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
+						return t;
+				}
 
-					Token aa_funcXX(char lexeme[]) {
+				Token aa_func13(char lexeme[]) {
 
 					THE FUNCTION SETS THE ERROR TOKEN.lexeme[] CONTAINS THE ERROR
 						THE ATTRIBUTE OF THE ERROR TOKEN IS THE lexeme ITSELF
@@ -356,16 +347,12 @@ Token malar_next_token(Buffer * sc_buf)
 						return t;
 				}
 
-
-				CONVERSION FUNCTION
-
-					long atolh(char * lexeme) {
+				long atolh(char * lexeme) {
 
 					THE FUNCTION CONVERTS AN ASCII STRING
 						REPRESENTING AN HEXADECIMAL INTEGER CONSTANT TO INTEGER VALUE
 				}
 
-				HERE YOU WRITE YOUR ADDITIONAL FUNCTIONS(IF ANY).
-					FOR EXAMPLE
-
-					int iskeyword(char * kw_lexeme) {}
+				int iskeyword(char * kw_lexeme) {
+				
+				}
