@@ -21,6 +21,10 @@
 #include <_null.h> /* NULL pointer constant is defined there */
 #endif
 
+#ifndef TOKEN_H_
+#include "token.h"
+#endif
+
 #define SEOF 255
 
 #define PLATY_INT_MAX SHRT_MAX
