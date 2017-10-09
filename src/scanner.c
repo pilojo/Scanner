@@ -249,6 +249,7 @@ Token malar_next_token(Buffer * sc_buf){
 
 				/*
 				author: John Pilon
+				version: 1.0
 				*/
 				Token aa_func02(char lexeme[]) {
 					Token token;
