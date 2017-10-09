@@ -398,7 +398,7 @@ Token malar_next_token(Buffer * sc_buf){
 				}
 
 				/* author: john pilon
-				** version: 1.0
+				** version: 1.1
 				*/
 				long atolh(char * lexeme) {
 					unsigned char i, base;  /* counters for base exponent and lexeme index */
@@ -406,7 +406,7 @@ Token malar_next_token(Buffer * sc_buf){
 					/* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
 					for (i = (char)strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
 						/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
-						hex += (short)pow(16, base)*(lexeme[i] < '0' ? (short)(lexeme[i]-'0') : (short)(lexeme[i]-'A'+10));
+						hex += (short)pow(16, base)*(lexeme[i] <= '9' ? (short)(lexeme[i]-'0') : (short)(lexeme[i]-'A'+10));
 					}
 					return hex;
 					/*THE FUNCTION CONVERTS AN ASCII STRING
