@@ -25,6 +25,7 @@
 #include <string.h>  /* string functions */
 #include <limits.h>  /* integer types constants */
 #include <float.h>   /* floating-point types constants */
+#include <math.h>
 
 /*#define NDEBUG        to suppress assert() call */
 #include <assert.h>  /* assert() prototype */
@@ -76,12 +77,12 @@ Token malar_next_token(Buffer * sc_buf){
 
 
 
-	DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED
+	/*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED
 
 
 		while (1) { /* endless loop broken by token returns it will generate a warning */
 
-			GET THE NEXT SYMBOL FROM THE INPUT BUFFER
+			/*GET THE NEXT SYMBOL FROM THE INPUT BUFFER
 
 				c = b_getc(sc_buf);
 
@@ -89,7 +90,7 @@ Token malar_next_token(Buffer * sc_buf){
 
 			/* special cases or token driven processing */
 
-			WRITE YOUR CODE FOR PROCESSING THE SPECIAL CASES HERE.
+			/*WRITE YOUR CODE FOR PROCESSING THE SPECIAL CASES HERE.
 				COMMENTS AND STRING LITERALS ARE ALSO PROCESSED HERE.
 
 				WHAT FOLLOWS IS A PSEUDO CODE.YOU CAN USE switch STATEMENT
@@ -106,9 +107,9 @@ Token malar_next_token(Buffer * sc_buf){
 		EXAMPLE:
 			if (c == ' ') continue;
 			if (c == '{') {
-				t.code = RBR_T; /*no attribute */ return t;
+				t.code = RBR_T; /*no attribute  return t;
 				if (c == '+') {
-					t.code = ART_OP_T; t.attribute.arr_op = PLUS * / return t;
+					/*t.code = ART_OP_T; t.attribute.arr_op = PLUS * / return t;
 					...
 
 						IF(c == '.') TRY TO PROCESS.AND. or .OR.
@@ -141,7 +142,7 @@ Token malar_next_token(Buffer * sc_buf){
 						return t;
 					/* Process state transition table */
 
-					IF(c is a digit OR c is a letter) {
+					/*IF(c is a digit OR c is a letter) {
 
 						SET THE MARK AT THE BEGINING OF THE LEXEME AND SAVE IT IN lexstart
 							lexstart = b_mark(sc_buf, ...);
@@ -182,13 +183,9 @@ Token malar_next_token(Buffer * sc_buf){
 							IN A CASE OF RUNTIME ERROR, THE FUNCTION MUST STORE
 							A NON - NEGATIVE NUMBER INTO THE GLOBAL VARIABLE scerrnum
 							AND RETURN AN ERROR TOKEN.THE ERROR TOKEN ATTRIBUTE MUST
-							BE THE STRING "RUN TIME ERROR: "
-					}//end while(1)
+							BE THE STRING "RUN TIME ERROR: "*/
+					/*}//end while(1)*/
 				}
-
-
-				DO NOT MODIFY THE CODE OF THIS FUNCTION
-					YOU CAN REMOVE THE COMMENTS
 
 				int get_next_state(int state, char c, int *accept){
 					int col;
@@ -237,14 +234,14 @@ Token malar_next_token(Buffer * sc_buf){
 				{
 					int val;
 
-					THIS FUNCTION RETURNS THE COLUMN NUMBER IN THE TRANSITION
+					/*THIS FUNCTION RETURNS THE COLUMN NUMBER IN THE TRANSITION
 						TABLE st_table FOR THE INPUT CHARACTER c.
 						SOME COLUMNS MAY REPRESENT A CHARACTER CLASS .
 						FOR EXAMPLE IF COLUMN 1 REPRESENTS[A - Z]
 						THE FUNCTION RETURNS 1 EVERY TIME c IS ONE
 						OF THE LETTERS A, B, ..., Z.
 
-						return val;
+						return val;*/
 				}
 
 				/*
@@ -279,7 +276,7 @@ Token malar_next_token(Buffer * sc_buf){
 						token.code = AVID_T;
 					}
 
-					return token;
+					return token; /* W:C4701 Acknowledgement:  token will always be initialized */
 
 					/* WHEN CALLED THE FUNCTION MUST
 						1. CHECK IF THE LEXEME IS A KEYWORD.
@@ -332,7 +329,7 @@ Token malar_next_token(Buffer * sc_buf){
 
 				Token aa_func08(char lexeme[]) {
 
-					THE FUNCTION MUST CONVERT THE LEXEME TO A FLOATING POINT VALUE,
+					/*THE FUNCTION MU CONVERT THE LEXEME TO A FLOATING POINT VALUE,
 						WHICH IS THE ATTRIBUTE FOR THE TOKEN.
 						THE VALUE MUST BE IN THE SAME RANGE AS the value of 4 - byte float in C.
 						IN CASE OF ERROR(OUT OF RANGE) THE FUNCTION MUST RETURN ERROR TOKEN
@@ -341,12 +338,12 @@ Token malar_next_token(Buffer * sc_buf){
 						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
 						err_lex C - type string.
 						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;
+						return t;*/
 				}
 
 				Token aa_func05(char lexeme[]) {
 
-					THE FUNCTION MUST CONVERT THE LEXEME REPRESENTING A DECIMAL CONSTANT
+					/*THE FUNCTION MUST CONVERT THE LEXEME REPRESENTING A DECIMAL CONSTANT
 						TO A DECIMAL INTEGER VALUE, WHICH IS THE ATTRIBUTE FOR THE TOKEN.
 						THE VALUE MUST BE IN THE SAME RANGE AS the value of 2 - byte integer in C.
 						IN CASE OF ERROR(OUT OF RANGE) THE FUNCTION MUST RETURN ERROR TOKEN
@@ -355,12 +352,12 @@ Token malar_next_token(Buffer * sc_buf){
 						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
 						err_lex C - type string.
 						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;
+						return t;*/
 				}
 
 				Token aa_func10(char lexeme[]) {
 
-					THE FUNCTION MUST CONVERT THE LEXEME REPRESENTING AN HEXADECIMAL CONSTANT
+					/*THE FUNCTION MUST CONVERT THE LEXEME REPRESENTING AN HEXADECIMAL CONSTANT
 						TO A DECIMAL INTEGER VALUE WHICH IS THE ATTRIBUTE FOR THE TOKEN.
 						THE VALUE MUST BE IN THE SAME RANGE AS the value of 2 - byte integer in C.
 						THIS FUNCTION IS SIMILAR TO THE FUNCTION ABOVE
@@ -373,43 +370,43 @@ Token malar_next_token(Buffer * sc_buf){
 						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
 						err_lex C - type string.
 						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;
+						return t;*/
 				}
 
 				Token aa_func12(char lexeme[]) {
 					
-					THE FUNCTION SETS THE ERROR TOKEN.lexeme[] CONTAINS THE ERROR
+					/*THE FUNCTION SETS THE ERROR TOKEN.lexeme[] CONTAINS THE ERROR
 						THE ATTRIBUTE OF THE ERROR TOKEN IS THE lexeme ITSELF
 						AND IT MUST BE STORED in err_lex.IF THE ERROR lexeme IS LONGER
 						than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
 						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
 						err_lex C - type string.
 						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;
+						return t;*/
 				}
 
 				Token aa_func13(char lexeme[]) {
 
-					THE FUNCTION SETS THE ERROR TOKEN.lexeme[] CONTAINS THE ERROR
+					/*THE FUNCTION SETS THE ERROR TOKEN.lexeme[] CONTAINS THE ERROR
 						THE ATTRIBUTE OF THE ERROR TOKEN IS THE lexeme ITSELF
 						AND IT MUST BE STORED in err_lex.IF THE ERROR lexeme IS LONGER
 						than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
 						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
 						err_lex C - type string.
 						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;
+						return t;*/
 				}
 
 				/* author: john pilon
 				** version: 1.0
 				*/
 				long atolh(char * lexeme) {
-					char i, base;  /* counters for base exponent and lexeme index */
+					unsigned char i, base;  /* counters for base exponent and lexeme index */
 					short hex = 0; /* hex value stored in PLATYPUS' integral type */
 					/* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
-					for (i = strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
+					for (i = (char)strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
 						/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
-						hex += exp(16, base)*(lexeme[i] < '0' ? (short)(lexeme[i]-'0') : (short)(lexeme-'A'+10));
+						hex += (short)pow(16, base)*(lexeme[i] < '0' ? (short)(lexeme[i]-'0') : (short)(lexeme[i]-'A'+10));
 					}
 					return hex;
 					/*THE FUNCTION CONVERTS AN ASCII STRING
