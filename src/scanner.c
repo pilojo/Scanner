@@ -247,9 +247,40 @@ Token malar_next_token(Buffer * sc_buf){
 						return val;
 				}
 
+				/*
+				author: John Pilon
+				*/
 				Token aa_func02(char lexeme[]) {
+					Token token;
+					int i;
 
-					WHEN CALLED THE FUNCTION MUST
+					if (iskeyword(lexeme)) {
+						for (i = 0; i < KWT_SIZE; i++) {
+							if (strcmp(lexeme, kw_table[i]) == 0) {
+								token.attribute.kwt_idx = i;
+								token.code = ES;
+								break;
+							}
+						}
+					}
+					else {
+						if (strlen(lexeme) > VID_LEN) {
+							char temp[VID_LEN - 1];
+							strcpy(temp, lexeme);
+							strcpy(token.attribute.vid_lex, temp);
+							token.attribute.vid_lex[VID_LEN] = '\0';
+						}
+						else {
+							strcpy(token.attribute.vid_lex, lexeme);
+							token.attribute.vid_lex[strlen(lexeme)] = '\0';
+
+						}
+						token.code = 2;
+					}
+
+					return token;
+
+					/* WHEN CALLED THE FUNCTION MUST
 						1. CHECK IF THE LEXEME IS A KEYWORD.
 						IF YES, IT MUST RETURN A TOKEN WITH THE CORRESPONDING ATTRIBUTE
 						FOR THE KEYWORD.THE ATTRIBUTE CODE FOR THE KEYWORD
@@ -261,7 +292,7 @@ Token malar_next_token(Buffer * sc_buf){
 						ONLY FIRST VID_LEN CHARACTERS ARE STORED
 						INTO THE VARIABLE ATTRIBUTE ARRAY vid_lex[](see token.h) .
 						ADD \0 AT THE END TO MAKE A C - type STRING.
-						return t;
+						return t;*/
 				}
 
 				Token aa_func03(char lexeme[]) {
@@ -354,5 +385,11 @@ Token malar_next_token(Buffer * sc_buf){
 				}
 
 				int iskeyword(char * kw_lexeme) {
-				
+					int i;
+
+					for (i = 0; i < KWT_SIZE; i++) {
+						if (strcmp(kw_lexeme, kw_table[i]) == 0) return 1;
+					}
+
+					return 0;
 				}
