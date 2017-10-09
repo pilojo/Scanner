@@ -248,8 +248,8 @@ Token malar_next_token(Buffer * sc_buf){
 				}
 
 				/*
-				author: John Pilon
-				version: 1.0
+				** author: John Pilon
+				** version: 1.0
 				*/
 				Token aa_func02(char lexeme[]) {
 					Token token;
@@ -259,24 +259,24 @@ Token malar_next_token(Buffer * sc_buf){
 						for (i = 0; i < KWT_SIZE; i++) {
 							if (strcmp(lexeme, kw_table[i]) == 0) {
 								token.attribute.kwt_idx = i;
-								token.code = ES;
+								token.code = KW_T;
 								break;
 							}
 						}
 					}
 					else {
 						if (strlen(lexeme) > VID_LEN) {
-							char temp[VID_LEN - 1];
+							char temp[VID_LEN];
 							strcpy(temp, lexeme);
 							strcpy(token.attribute.vid_lex, temp);
-							token.attribute.vid_lex[VID_LEN] = '\0';
+							token.attribute.vid_lex[VID_LEN+1] = '\0';
 						}
 						else {
 							strcpy(token.attribute.vid_lex, lexeme);
 							token.attribute.vid_lex[strlen(lexeme)] = '\0';
 
 						}
-						token.code = 2;
+						token.code = AVID_T;
 					}
 
 					return token;
@@ -296,9 +296,30 @@ Token malar_next_token(Buffer * sc_buf){
 						return t;*/
 				}
 
+				/* author: john pilon
+				** version: 1.0
+				*/
 				Token aa_func03(char lexeme[]) {
+					Token token;
 
-					WHEN CALLED THE FUNCTION MUST
+					token.code = SVID_T;
+
+					if (strlen(lexeme) > VID_LEN-1) {
+						char temp[VID_LEN - 1];
+						strcpy(temp, lexeme);
+						strcpy(token.attribute.vid_lex, temp);
+						token.attribute.vid_lex[VID_LEN] = '$';
+						token.attribute.vid_lex[VID_LEN+1] = '\0';
+					}
+					else {
+						strcpy(token.attribute.vid_lex, lexeme);
+						token.attribute.vid_lex[strlen(lexeme)] = '\0';
+
+					}
+					token.code = AVID_T;
+
+					return token;
+					/*WHEN CALLED THE FUNCTION MUST
 						1. SET a SVID TOKEN.
 						IF THE lexeme IS LONGER than VID_LEN characters,
 						ONLY FIRST VID_LEN - 1 CHARACTERS ARE STORED
@@ -306,7 +327,7 @@ Token malar_next_token(Buffer * sc_buf){
 						AND THEN THE $ CHARACTER IS APPENDED TO THE NAME.
 						ADD \0 AT THE END TO MAKE A C - type STRING.
 
-						return t;
+						return t;*/
 				}
 
 				Token aa_func08(char lexeme[]) {
@@ -379,12 +400,25 @@ Token malar_next_token(Buffer * sc_buf){
 						return t;
 				}
 
+				/* author: john pilon
+				** version: 1.0
+				*/
 				long atolh(char * lexeme) {
-
-					THE FUNCTION CONVERTS AN ASCII STRING
-						REPRESENTING AN HEXADECIMAL INTEGER CONSTANT TO INTEGER VALUE
+					char i, base;  /* counters for base exponent and lexeme index */
+					short hex = 0; /* hex value stored in PLATYPUS' integral type */
+					/* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
+					for (i = strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
+						/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
+						hex += exp(16, base)*(lexeme[i] < '0' ? (short)(lexeme[i]-'0') : (short)(lexeme-'A'+10));
+					}
+					return hex;
+					/*THE FUNCTION CONVERTS AN ASCII STRING
+						REPRESENTING AN HEXADECIMAL INTEGER CONSTANT TO INTEGER VALUE*/
 				}
 
+				/* author: john pilon
+				** version: 1.0
+				*/
 				int iskeyword(char * kw_lexeme) {
 					int i;
 
