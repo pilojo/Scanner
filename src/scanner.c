@@ -313,7 +313,6 @@ Token malar_next_token(Buffer * sc_buf){
 						token.attribute.vid_lex[strlen(lexeme)] = '\0';
 
 					}
-					token.code = AVID_T;
 
 					return token;
 					/*WHEN CALLED THE FUNCTION MUST
@@ -402,7 +401,7 @@ Token malar_next_token(Buffer * sc_buf){
 				*/
 				long atolh(char * lexeme) {
 					unsigned char i, base;  /* counters for base exponent and lexeme index */
-					short hex = 0; /* hex value stored in PLATYPUS' integral type */
+					long hex = 0; /* integer conversion of hex value */
 					/* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
 					for (i = (char)strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
 						/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
