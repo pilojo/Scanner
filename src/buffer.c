@@ -172,6 +172,7 @@ int b_clear(Buffer *const pBD) {
 		pBD->getc_offset = BUFFER_START;
 		pBD->markc_offset = BUFFER_START;
 		pBD->eob = !EOB;
+		pBD->r_flag = !SET_R_FLAG;
 		return SUCCESS;
 	}
 	return RT_FAIL1;
