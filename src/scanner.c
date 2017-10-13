@@ -84,12 +84,28 @@ Token malar_next_token(Buffer * sc_buf)
 	char * lexeme;
 	int i;
 
+	if (sc_buf == NULL) {
+
+		scerrnum = -1;
+
+		return aa_table[ES]("RUN TIME ERROR: "); 
+
+	}
+
 	while (1)
 	{ 
 		c = b_getc(sc_buf);
 		switch (c)
 		{
+		case SEOF:
+			t.code = SEOF_T;
+			return t;
+		case '\0':
+			t.code = SEOF_T; 
+			return t;
 		case ' ':
+			continue;
+		case '\t':
 			continue;
 		case '{':
 			t.code = LBR_T;
@@ -171,38 +187,19 @@ Token malar_next_token(Buffer * sc_buf)
 			}
 			return t;
 		case '.':
+			b_mark(sc_buf, b_getcoffset(sc_buf));
+			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
+				t.code = LOG_OP_T;
+				t.attribute.log_op = AND;
+				return t;
+			}
+			else if (c == 'O' && b_getc(sc_buf) == 'R' && b_getc(sc_buf) == '.') {
+				t.code = LOG_OP_T;
+				t.attribute.log_op = OR;
+			}
 			t.code = ERR_T;
-
-			c = b_getc(sc_buf);
-			if (c == 'A') {
-				c = b_getc(sc_buf);
-				if (c == 'N') {
-					c = b_getc(sc_buf);
-					if (c == 'D') {
-						c = b_getc(sc_buf);
-						if (c == '.') {
-							t.code = LOG_OP_T;
-							t.attribute.log_op = AND;
-						}
-						else t.attribute.err_lex[0] = c;
-					}
-					else t.attribute.err_lex[0] = c;
-				}
-				else t.attribute.err_lex[0] = c;
-			}
-			else if (c == 'O') {
-				c = b_getc(sc_buf);
-				if (c == 'R') {
-					c = b_getc(sc_buf);
-					if (c == '.') {
-						t.code = LOG_OP_T;
-						t.attribute.log_op = OR;
-					}
-					else t.attribute.err_lex[0] = c;
-				}
-				else t.attribute.err_lex[0] = c;
-			}
-			else t.attribute.err_lex[0] = c;
+			t.attribute.err_lex[0] = c;
+			b_retract(sc_buf);
 			return t;
 		case '#':
 			t.code = SCC_OP_T;
@@ -210,10 +207,10 @@ Token malar_next_token(Buffer * sc_buf)
 		case '\n':
 			lines++;
 			break;
-		case '"':
+		case '\"':
 			lexstart = b_mark(sc_buf, b_getcoffset(sc_buf) - 1);
 			b_mark(str_LTBL, b_getcoffset(str_LTBL));
-			while ((c = b_getc(sc_buf)) != '"' && !b_eob(sc_buf));
+			while ((c = b_getc(sc_buf)) != '\"' && !b_eob(sc_buf));
 			lexend = b_getcoffset(sc_buf) - 1;
 			if (b_eob) {
 				t.code = ERR_T;
@@ -253,10 +250,19 @@ Token malar_next_token(Buffer * sc_buf)
 				}
 				lexeme = (char*)malloc(lexend-lexstart);
 				strncpy(lexeme, sc_buf->cb_head+lexstart, lexend - lexstart);
-
-				t = aa_table[state](lexeme);
-				free(lexeme);
-				b_free(lex_buf);
+				if (aa_table[state] != NULL){
+					t = aa_table[state](lexeme);
+					free(lexeme);
+					b_free(lex_buf);
+				}
+				else {
+					scerrnum = -1;
+					t = aa_table[ES]("RUN TIME ERROR: ");
+					free(lexeme);
+					b_free(lex_buf);
+					return t;
+				}
+				
 				return t;
 			}
 			else {
@@ -484,9 +490,9 @@ long atolh(char * lexeme) {
 int iskeyword(char * kw_lexeme) {
 	int i;
 	for (i = 0; i < KWT_SIZE; i++) {
-		if (strcmp(kw_lexeme, kw_table[i]) == 0) return 1;
+		if (strcmp(kw_lexeme, kw_table[i]) == 0) return i;
 	}
-	return 0;
+	return -1;
 }//isKeyword
 
 int is_str(char c) {
