@@ -161,8 +161,7 @@ Token malar_next_token(Buffer * sc_buf)
 			else {
 				t.code = ERR_T;
 				lexeme = (char*)malloc(2);
-				lexeme[0] = '=';
-				lexeme[1] = c;
+				strcpy(lexeme, "=" + c);
 				strcpy(t.attribute.err_lex, lexeme);
 			}
 			return t;
@@ -181,11 +180,10 @@ Token malar_next_token(Buffer * sc_buf)
 			else {
 				t.code = ERR_T;
 				lexeme = (char*)malloc(2);
-				lexeme[0] = '!';
-				lexeme[1] = c;
+				strcpy(lexeme, "!" + c);
 				strcpy(t.attribute.err_lex, lexeme);
 			}
-			return t;
+			return t; 
 		case '.':
 			b_mark(sc_buf, b_getcoffset(sc_buf));
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
@@ -214,18 +212,18 @@ Token malar_next_token(Buffer * sc_buf)
 			lexend = b_getcoffset(sc_buf) - 1;
 			if (b_eob) {
 				t.code = ERR_T;
-				for (i = 0; i < 17; i++) {
-					lexeme = b_location(sc_buf, (short)(lexstart + i));
-					strcpy(t.attribute.err_lex, lexeme);
-				}
+				lexeme = (char*)malloc(17);
+				strncpy(lexeme, b_location(sc_buf, (short)(lexstart)), 17);
+				strcpy(t.attribute.err_lex, lexeme);
 				for (i = 17; i < 20; i++) {
 					t.attribute.err_lex[i] = '.';
 				}
 			}
 			else {
 				t.attribute.str_offset = b_limit(str_LTBL);
+				b_retract(sc_buf);
 				for (i = t.attribute.str_offset; i < lexend - lexstart; i++) {
-					b_addc(str_LTBL, *b_location(sc_buf, (short)(lexstart + i)));
+					b_addc(str_LTBL, b_getc(sc_buf));
 				}
 				b_addc(str_LTBL, '\0');
 				t.code = STR_T;
@@ -396,8 +394,8 @@ Token aa_func08(char lexeme[]) {
 		than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
 		STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
 		err_lex C - type string.
-		BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-	return t;*/
+		BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE*/
+	return t;
 }//aa_func08
 
 /*
