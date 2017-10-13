@@ -77,10 +77,10 @@ Token malar_next_token(Buffer * sc_buf){
 
 
 
-	/*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED
+	/*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
+	int lines = 0;
 
-
-		while (1) { /* endless loop broken by token returns it will generate a warning */
+	while (1) { 
 
 			/*GET THE NEXT SYMBOL FROM THE INPUT BUFFER
 
@@ -104,7 +104,130 @@ Token malar_next_token(Buffer * sc_buf){
 				continue;
 			OR SET TOKEN(SET TOKEN CODE AND TOKEN ATTRIBUTE(IF AVAILABLE))
 				return t;
-		EXAMPLE:
+
+				*/
+		switch (c) {
+		case ' ':
+			continue;
+		case '{':
+			t.code = LBR_T;
+			return t;
+		case '}':
+			t.code = RBR_T;
+			return t;
+		case '(':
+			t.code = LPR_T;
+			return t;
+		case ')':
+			t.code = RPR_T;
+			return t;
+		case ',':
+			t.code = COM_T;
+			return t;
+		case ';':
+			t.code = EOS_T;
+			return t;
+		case '+':
+			t.code = ART_OP_T;
+			t.attribute.arr_op = PLUS;
+			return t;
+		case '-':
+			t.code = ART_OP_T;
+			t.attribute.arr_op = MINUS;
+			return t;
+		case '*':
+			t.code = ART_OP_T;
+			t.attribute.arr_op = MULT;
+			return t;
+		case '/':
+			t.code = ART_OP_T;
+			t.attribute.arr_op = DIV;
+			return t;
+		case '>':
+			t.code = REL_OP_T;
+			t.attribute.rel_op = GT;
+			return t;
+		case '<':
+			t.code = REL_OP_T;
+			t.attribute.rel_op = LT;
+			return t;
+		case '=':
+			c = b_getc(sc_buf);
+			if (c == '=') {
+				t.code = REL_OP_T;
+				t.attribute.rel_op = EQ;
+			}
+			else if (c == ' ') {
+				t.code = ASS_OP_T;
+			}
+			else {
+				t.code = ERR_T;
+				strcpy(t.attribute.err_lex, '=' + c);
+			}
+			return t;
+		case '!':
+			c = b_getc(sc_buf);
+			if (c == '=') {
+				t.code = REL_OP_T;
+				t.attribute.rel_op = NE;
+			}
+			else if (c == '!') {
+				while (c = b_getc(sc_buf) != '\n') {
+					continue;
+				}
+				lines++;
+			}
+			else {
+				t.code = ERR_T;
+				strcpy(t.attribute.err_lex, '!' + c);
+			}
+			return t;
+		case '.':
+			t.code = ERR_T;
+
+			c = b_getc(sc_buf);
+			if (c == 'A') {
+				c = b_getc(sc_buf);
+				if (c == 'N') {
+					c = b_getc(sc_buf);
+					if (c == 'D') {
+						c = b_getc(sc_buf);
+						if (c == '.') {
+							t.code = LOG_OP_T;
+							t.attribute.log_op = AND;
+						}
+						else t.attribute.err_lex[0] = c;
+					}
+					else t.attribute.err_lex[0] = c;
+				}
+				else t.attribute.err_lex[0] = c;
+			}
+			else if (c == 'O') {
+				c = b_getc(sc_buf);
+				if (c == 'R') {
+					c = b_getc(sc_buf);
+					if (c == '.') {
+						t.code = LOG_OP_T;
+						t.attribute.log_op = OR;
+					}
+					else t.attribute.err_lex[0] = c;
+				}
+				else t.attribute.err_lex[0] = c;
+			}
+			else t.attribute.err_lex[0] = c;
+			return t;
+		case '#':
+			t.code = SCC_OP_T;
+			return t;
+		case '\n':
+			lines++;
+			break;
+		}
+		
+
+			
+		}
+		/*EXAMPLE:
 			if (c == ' ') continue;
 			if (c == '{') {
 				t.code = RBR_T; /*no attribute  return t;
@@ -184,7 +307,7 @@ Token malar_next_token(Buffer * sc_buf){
 							A NON - NEGATIVE NUMBER INTO THE GLOBAL VARIABLE scerrnum
 							AND RETURN AN ERROR TOKEN.THE ERROR TOKEN ATTRIBUTE MUST
 							BE THE STRING "RUN TIME ERROR: "*/
-					/*}//end while(1)*/
+					}
 				}
 
 				int get_next_state(int state, char c, int *accept){
