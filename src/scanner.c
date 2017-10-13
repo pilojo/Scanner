@@ -56,7 +56,7 @@ static int get_next_state(int, char, int *); /* state machine function */
 static int iskeyword(char * kw_lexeme); /*keywords lookup functuion */
 static long atolh(char * lexeme); /* converts hexadecimal string to decimal value */
 
-								  /*Initializes scanner */
+/*Initializes scanner */
 int scanner_init(Buffer * sc_buf) {
 	if (b_isempty(sc_buf)) return EXIT_FAILURE;/*1*/
 											   /* in case the buffer has been read previously  */
@@ -64,10 +64,11 @@ int scanner_init(Buffer * sc_buf) {
 	b_clear(str_LTBL);
 	line = 1;
 	return EXIT_SUCCESS;/*0*/
-						/*   scerrnum = 0;  *//*no need - global ANSI C */
+	/*   scerrnum = 0;  *//*no need - global ANSI C */
 }
 
-Token malar_next_token(Buffer * sc_buf){
+Token malar_next_token(Buffer * sc_buf)
+{
 	Token t; /* token to return after recognition */
 	unsigned char c; /* input symbol */
 	int state = 0; /* initial state of the FSM */
@@ -80,470 +81,347 @@ Token malar_next_token(Buffer * sc_buf){
 	/*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
 	int lines = 0;
 
-	while (1) { 
-
-			/*GET THE NEXT SYMBOL FROM THE INPUT BUFFER
-
-				c = b_getc(sc_buf);
-
-
-
-			/* special cases or token driven processing */
-
-			/*WRITE YOUR CODE FOR PROCESSING THE SPECIAL CASES HERE.
-				COMMENTS AND STRING LITERALS ARE ALSO PROCESSED HERE.
-
-				WHAT FOLLOWS IS A PSEUDO CODE.YOU CAN USE switch STATEMENT
-				INSTEAD OF if - else TO PROCESS THE SPECIAL CASES
-				DO NOT FORGET TO COUNT THE PROGRAM LINES
-
-
-				IF(c == SOME CHARACTER)
-				...
-				SKIP CHARACTER(FOR EXAMPLE SPACE)
+	while (1)
+	{ 
+		c = b_getc(sc_buf);
+		switch (c)
+		{
+			case ' ':
 				continue;
-			OR SET TOKEN(SET TOKEN CODE AND TOKEN ATTRIBUTE(IF AVAILABLE))
+			case '{':
+				t.code = LBR_T;
 				return t;
-
-				*/
-		switch (c) {
-		case ' ':
-			continue;
-		case '{':
-			t.code = LBR_T;
-			return t;
-		case '}':
-			t.code = RBR_T;
-			return t;
-		case '(':
-			t.code = LPR_T;
-			return t;
-		case ')':
-			t.code = RPR_T;
-			return t;
-		case ',':
-			t.code = COM_T;
-			return t;
-		case ';':
-			t.code = EOS_T;
-			return t;
-		case '+':
-			t.code = ART_OP_T;
-			t.attribute.arr_op = PLUS;
-			return t;
-		case '-':
-			t.code = ART_OP_T;
-			t.attribute.arr_op = MINUS;
-			return t;
-		case '*':
-			t.code = ART_OP_T;
-			t.attribute.arr_op = MULT;
-			return t;
-		case '/':
-			t.code = ART_OP_T;
-			t.attribute.arr_op = DIV;
-			return t;
-		case '>':
-			t.code = REL_OP_T;
-			t.attribute.rel_op = GT;
-			return t;
-		case '<':
-			t.code = REL_OP_T;
-			t.attribute.rel_op = LT;
-			return t;
-		case '=':
-			c = b_getc(sc_buf);
-			if (c == '=') {
+			case '}':
+				t.code = RBR_T;
+				return t;
+			case '(':
+				t.code = LPR_T;
+				return t;
+			case ')':
+				t.code = RPR_T;
+				return t;
+			case ',':
+				t.code = COM_T;
+				return t;
+			case ';':
+				t.code = EOS_T;
+				return t;
+			case '+':
+				t.code = ART_OP_T;
+				t.attribute.arr_op = PLUS;
+				return t;
+			case '-':
+				t.code = ART_OP_T;
+				t.attribute.arr_op = MINUS;
+				return t;
+			case '*':
+				t.code = ART_OP_T;
+				t.attribute.arr_op = MULT;
+				return t;
+			case '/':
+				t.code = ART_OP_T;
+				t.attribute.arr_op = DIV;
+				return t;
+			case '>':
 				t.code = REL_OP_T;
-				t.attribute.rel_op = EQ;
-			}
-			else if (c == ' ') {
-				t.code = ASS_OP_T;
-			}
-			else {
-				t.code = ERR_T;
-				strcpy(t.attribute.err_lex, '=' + c);
-			}
-			return t;
-		case '!':
-			c = b_getc(sc_buf);
-			if (c == '=') {
+				t.attribute.rel_op = GT;
+				return t;
+			case '<':
 				t.code = REL_OP_T;
-				t.attribute.rel_op = NE;
-			}
-			else if (c == '!') {
-				while (c = b_getc(sc_buf) != '\n') {
-					continue;
-				}
-				lines++;
-			}
-			else {
-				t.code = ERR_T;
-				strcpy(t.attribute.err_lex, '!' + c);
-			}
-			return t;
-		case '.':
-			t.code = ERR_T;
-
-			c = b_getc(sc_buf);
-			if (c == 'A') {
+				t.attribute.rel_op = LT;
+				return t;
+			case '=':
 				c = b_getc(sc_buf);
-				if (c == 'N') {
+				if (c == '=') {
+					t.code = REL_OP_T;
+					t.attribute.rel_op = EQ;
+				}
+				else if (c == ' ') {
+					t.code = ASS_OP_T;
+				}
+				else {
+					t.code = ERR_T;
+					strcpy(t.attribute.err_lex, '=' + c);
+				}
+				return t;
+			case '!':
+				c = b_getc(sc_buf);
+				if (c == '=') {
+					t.code = REL_OP_T;
+					t.attribute.rel_op = NE;
+				}
+				else if (c == '!') {
+					while (c = b_getc(sc_buf) != '\n') {
+						continue;
+					}
+					lines++;
+				}
+				else {
+					t.code = ERR_T;
+					strcpy(t.attribute.err_lex, '!' + c);
+				}
+				return t;
+			case '.':
+				t.code = ERR_T;
+
+				c = b_getc(sc_buf);
+				if (c == 'A') {
 					c = b_getc(sc_buf);
-					if (c == 'D') {
+					if (c == 'N') {
+						c = b_getc(sc_buf);
+						if (c == 'D') {
+							c = b_getc(sc_buf);
+							if (c == '.') {
+								t.code = LOG_OP_T;
+								t.attribute.log_op = AND;
+							}
+							else t.attribute.err_lex[0] = c;
+						}
+						else t.attribute.err_lex[0] = c;
+					}
+					else t.attribute.err_lex[0] = c;
+				}
+				else if (c == 'O') {
+					c = b_getc(sc_buf);
+					if (c == 'R') {
 						c = b_getc(sc_buf);
 						if (c == '.') {
 							t.code = LOG_OP_T;
-							t.attribute.log_op = AND;
+							t.attribute.log_op = OR;
 						}
 						else t.attribute.err_lex[0] = c;
 					}
 					else t.attribute.err_lex[0] = c;
 				}
 				else t.attribute.err_lex[0] = c;
-			}
-			else if (c == 'O') {
-				c = b_getc(sc_buf);
-				if (c == 'R') {
-					c = b_getc(sc_buf);
-					if (c == '.') {
-						t.code = LOG_OP_T;
-						t.attribute.log_op = OR;
-					}
-					else t.attribute.err_lex[0] = c;
-				}
-				else t.attribute.err_lex[0] = c;
-			}
-			else t.attribute.err_lex[0] = c;
-			return t;
-		case '#':
-			t.code = SCC_OP_T;
-			return t;
-		case '\n':
-			lines++;
-			break;
+				return t;
+			case '#':
+				t.code = SCC_OP_T;
+				return t;
+			case '\n':
+				lines++;
+				break;
 		}
 		
 
 			
+	}//while
+		
+}//malar_next_token
+
+/*
+* author:
+* version: 
+*/
+int get_next_state(int state, char c, int *accept)
+{
+	int col;
+	int next;
+	col = char_class(c);
+	next = st_table[state][col];
+	#ifdef DEBUG
+		printf("Input symbol: %c Row: %d Column: %d Next: %d \n", c, state, col, next);
+	#endif
+	assert(next != IS);
+	#ifdef DEBUG
+		if (next == IS) {
+			printf("Scanner Error: Illegal state:\n");
+			printf("Input symbol: %c Row: %d Column: %d\n", c, state, col);
+			exit(1);
 		}
-		/*EXAMPLE:
-			if (c == ' ') continue;
-			if (c == '{') {
-				t.code = RBR_T; /*no attribute  return t;
-				if (c == '+') {
-					/*t.code = ART_OP_T; t.attribute.arr_op = PLUS * / return t;
-					...
+	#endif
+	*accept = as_table[next];
+	return next;
+}//get_next_state
 
-						IF(c == '.') TRY TO PROCESS.AND. or .OR.
-						IF SOMETHING ELSE FOLLOWS.OR THE LAST.IS MISSING
-						RETURN AN ERROR TOKEN
-						IF(c == '!') TRY TO PROCESS COMMENT
-						IF THE FOLLOWING CHAR IS NOT !REPORT AN ERROR
-						ELSE IN A LOOP SKIP CHARACTERS UNTIL line terminator is found THEN continue;
-					...
-						IF STRING(FOR EXAMPLE, "text") IS FOUND
-						SET MARK TO MARK THE BEGINNING OF THE STRING
-						IF THE STRING IS LEGAL
-						USING b_addc(..)COPY THE text FROM INPUT BUFFER INTO str_LTBL
-						ADD '\0' at the end make the string C - type string
-						SET STRING TOKEN
-						(the attribute of the string token is the offset from
-							the beginning of the str_LTBL char buffer to the beginning
-							of the string(TEXT in the example))
+/*
+** author: Daniel Brenot
+** version: 1.0
+*/
+int char_class(char c)
+{
+	if ((c >= 'a'&&c <= 'z') || (c >= 'A' && c <= 'Z'))
+	{return 0;}
+	else if (c=='0')
+	{return 1;}
+	else if (c>='1'&&c<='9')
+	{return 2;}
+	else if (c=='.')
+	{return 3;}
+	else if (c=='$')
+	{return 4;}
+	else
+	{return 5;}
+}//char_class
 
-						return t;
-					ELSE
-						THE STRING LITERAL IS ILLEGAL
-						SET ERROR TOKEN FOR ILLEGAL STRING(see assignment)
-						DO NOT STORE THE ILLEGAL STRINg IN THE str_LTBL
+/*
+** author: John Pilon
+** version: 1.0
+*/
+Token aa_func02(char lexeme[])
+{
+	Token token;
+	int i;
 
-						return t;
+	if (iskeyword(lexeme)) {
+		for (i = 0; i < KWT_SIZE; i++) {
+			if (strcmp(lexeme, kw_table[i]) == 0) {
+				token.attribute.kwt_idx = i;
+				token.code = KW_T;
+				break;
+			}
+		}
+	}
+	else {
+		if (strlen(lexeme) > VID_LEN) {
+			char temp[VID_LEN];
+			strcpy(temp, lexeme);
+			strcpy(token.attribute.vid_lex, temp);
+			token.attribute.vid_lex[VID_LEN+1] = '\0';
+		}
+		else {
+			strcpy(token.attribute.vid_lex, lexeme);
+			token.attribute.vid_lex[strlen(lexeme)] = '\0';
+		}
+		token.code = AVID_T;
+	}
 
-					IF(c == ANOTHER CHARACTER)
-						SET TOKEN
-						return t;
-					/* Process state transition table */
+	return token;
+}//aa_func02
 
-					/*IF(c is a digit OR c is a letter) {
+/* author: john pilon
+** version: 1.0
+*/
+Token aa_func03(char lexeme[]) {
+	Token token;
 
-						SET THE MARK AT THE BEGINING OF THE LEXEME AND SAVE IT IN lexstart
-							lexstart = b_mark(sc_buf, ...);
-						....
-							CODE YOUR FINATE STATE MACHINE HERE(FSM or DFA)
-							IT IMPLEMENTS THE FOLLOWING ALGORITHM :
+	token.code = SVID_T;
 
-						FSM0.Begin with state = 0 and the input character c
-							FSM1.Get the next state from the transition table calling
-							state = get_next_state(state, c, &accept);
-						FSM2.Get the next character
-							FSM3.If the state is not accepting(accept == NOAS), go to step FSM1
-							If the step is accepting, token is found, leave the machine and
-							call an accepting function as described below.
+	if (strlen(lexeme) > VID_LEN-1) {
+		char temp[VID_LEN - 1];
+		strcpy(temp, lexeme);
+		strcpy(token.attribute.vid_lex, temp);
+		token.attribute.vid_lex[VID_LEN] = '$';
+		token.attribute.vid_lex[VID_LEN+1] = '\0';
+	}
+	else {
+		strcpy(token.attribute.vid_lex, lexeme);
+		token.attribute.vid_lex[strlen(lexeme)] = '\0';
+	}
 
+	return token;
 
-							RETRACT  getc_offset IF THE FINAL STATE IS A RETRACTING FINAL STATE
+}//aa_func03
 
-							SET lexend TO getc_offset USING AN APPROPRIATE BUFFER FUNCTION
+/*
+* author:
+* version:
+*/
+Token aa_func08(char lexeme[]) {
+	Token t;
+	/*THE FUNCTION MU CONVERT THE LEXEME TO A FLOATING POINT VALUE,
+		WHICH IS THE ATTRIBUTE FOR THE TOKEN.
+		THE VALUE MUST BE IN THE SAME RANGE AS the value of 4 - byte float in C.
+		IN CASE OF ERROR(OUT OF RANGE) THE FUNCTION MUST RETURN ERROR TOKEN
+		THE ERROR TOKEN ATTRIBUTE IS  lexeme.IF THE ERROR lexeme IS LONGER
+		than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
+		STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
+		err_lex C - type string.
+		BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
+	return t;*/
+}//aa_func08
 
-							CREATE  A TEMPORRARY LEXEME BUFFER HERE;
-						lex_buf = b_allocate(...);
-						.RETRACT getc_offset to the MARK SET PREVIOUSLY AT THE BEGINNING OF THE LEXEME AND
-							.USING b_getc() COPY THE LEXEME BETWEEN lexstart AND lexend FROM THE INPUT BUFFER INTO lex_buf USING b_addc(...),
-							.WHEN VID(KEYWORDS INCLUDED), FPL OR IL IS RECOGNIZED
-							.YOU MUST CALL THE ACCEPTING FUNCTION USING THE ARRAY aa_table, WHICH
-							.CONTAINS POINTERS TO FUNCTIONS.THE ARRAY INDEX OF THE FUNCTION TO BE
-							.CALLED IS STORED IN THE VARIABLE state.
-							.YOU ARE NOT ALLOWED TO CALL ANY OF THE ACCEPTING FUNCTIONS BY NAME.
-							.THE ARGUMENT TO THE FUNCTION IS THE STRING STORED IN lex_buf.
-							....
-							b_free(lex_buf);
-						return t;
+/*
+* author: Daniel Brenot
+*
+* converts a base 10 string to a token storing an integer;TODO hat about negatives?
+*/
+Token aa_func05(char lexeme[])
+{
+	Token t;
+	short i;
+	short size = sizeof(lexeme);
+	for (i=0; i<size; i++)
+	{
+		t.attribute.int_value += (lexeme[i]-'0') *pow(10,size-i);
+		if (t.attribute.int_value < 0) 
+		{ 
+			if (sizeof(lexeme) > ERR_LEN)
+			{
+				strcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
+				t.attribute.err_lex[ERR_LEN - 3] = '.';
+				t.attribute.err_lex[ERR_LEN - 2] = '.';
+				t.attribute.err_lex[ERR_LEN - 1] = '.';
+				t.attribute.err_lex[ERR_LEN] = '\0';
+				t.code = ERR_T;
+			}
+			else
+			{
+				strcpy(t.attribute.err_lex, lexeme);
+				t.attribute.err_lex[size] = '\0';
+				t.code = INL_T;
+			}
+			break; 
+		}
+	}
+	return t;
+}//aa_func05
 
-						CHECK OTHER CHARS HERE if NEEDED, SET A TOKEN AND RETURN IT.
-							FOR ILLEGAL CHARACTERS SET ERROR TOKEN.
-							THE ILLEGAL CHAR IS THE ATTRIBUTE OF THE ERROR TOKEN
-							IN A CASE OF RUNTIME ERROR, THE FUNCTION MUST STORE
-							A NON - NEGATIVE NUMBER INTO THE GLOBAL VARIABLE scerrnum
-							AND RETURN AN ERROR TOKEN.THE ERROR TOKEN ATTRIBUTE MUST
-							BE THE STRING "RUN TIME ERROR: "*/
-					}
-				}
+/*
+* author:
+* version:
+* TODO
+*/
+Token aa_func10(char lexeme[])
+{
+	Token t;
 
-				int get_next_state(int state, char c, int *accept){
-					int col;
-					int next;
-					col = char_class(c);
-					next = st_table[state][col];
-#ifdef DEBUG
-					printf("Input symbol: %c Row: %d Column: %d Next: %d \n", c, state, col, next);
-#endif
-					/*
-					The assert(int test) macro can be used to add run-time diagnostic to programs
-					and to "defend" from producing unexpected results.
-					assert() is a macro that expands to an if statement;
-					if test evaluates to false (zero) , assert aborts the program
-					(by calling abort()) and sends the following message on stderr:
+	return t;
+}//aa_func10
 
-					Assertion failed: test, file filename, line linenum
+/*
+* author:
+* version:
+* TODO
+*/
+Token aa_func12(char lexeme[])
+{
+	Token t;
+	return t;
+}//aa_func12
 
-					The filename and linenum listed in the message are the source file name
-					and line number where the assert macro appears.
-					If you place the #define NDEBUG directive ("no debugging")
-					in the source code before the #include <assert.h> directive,
-					the effect is to comment out the assert statement.
-					*/
-					assert(next != IS);
+/*
+* author:
+* version:
+* TODO
+*/
+Token aa_func13(char lexeme[])
+{
+	Token t;
+	return t;
+}//aa_func13
 
-					/*
-					The other way to include diagnostics in a program is to use
-					conditional preprocessing as shown bellow. It allows the programmer
-					to send more details describing the run-time problem.
-					Once the program is tested thoroughly #define DEBUG is commented out
-					or #undef DEBUF is used - see the top of the file.
-					*/
-#ifdef DEBUG
-					if (next == IS) {
-						printf("Scanner Error: Illegal state:\n");
-						printf("Input symbol: %c Row: %d Column: %d\n", c, state, col);
-						exit(1);
-					}
-#endif
-					*accept = as_table[next];
-					return next;
-				}
+/* author: john pilon
+* version: 1.1
+*/
+long atolh(char * lexeme) {
+	unsigned char i, base;  /* counters for base exponent and lexeme index */
+	long hex = 0; /* integer conversion of hex value */
+	/* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
+	for (i = (char)strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
+		/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
+		hex += (short)pow(16, base)*(lexeme[i] <= '9' ? (short)(lexeme[i]-'0') : (short)(lexeme[i]-'A'+10));
+	}
+	return hex;
+}//atolh
 
-				int char_class(char c)
-				{
-					int val;
-
-					/*THIS FUNCTION RETURNS THE COLUMN NUMBER IN THE TRANSITION
-						TABLE st_table FOR THE INPUT CHARACTER c.
-						SOME COLUMNS MAY REPRESENT A CHARACTER CLASS .
-						FOR EXAMPLE IF COLUMN 1 REPRESENTS[A - Z]
-						THE FUNCTION RETURNS 1 EVERY TIME c IS ONE
-						OF THE LETTERS A, B, ..., Z.
-
-						return val;*/
-				}
-
-				/*
-				** author: John Pilon
-				** version: 1.0
-				*/
-				Token aa_func02(char lexeme[]) {
-					Token token;
-					int i;
-
-					if (iskeyword(lexeme)) {
-						for (i = 0; i < KWT_SIZE; i++) {
-							if (strcmp(lexeme, kw_table[i]) == 0) {
-								token.attribute.kwt_idx = i;
-								token.code = KW_T;
-								break;
-							}
-						}
-					}
-					else {
-						if (strlen(lexeme) > VID_LEN) {
-							char temp[VID_LEN];
-							strcpy(temp, lexeme);
-							strcpy(token.attribute.vid_lex, temp);
-							token.attribute.vid_lex[VID_LEN+1] = '\0';
-						}
-						else {
-							strcpy(token.attribute.vid_lex, lexeme);
-							token.attribute.vid_lex[strlen(lexeme)] = '\0';
-
-						}
-						token.code = AVID_T;
-					}
-
-					return token; /* W:C4701 Acknowledgement:  token will always be initialized */
-
-					/* WHEN CALLED THE FUNCTION MUST
-						1. CHECK IF THE LEXEME IS A KEYWORD.
-						IF YES, IT MUST RETURN A TOKEN WITH THE CORRESPONDING ATTRIBUTE
-						FOR THE KEYWORD.THE ATTRIBUTE CODE FOR THE KEYWORD
-						IS ITS INDEX IN THE KEYWORD LOOKUP TABLE(kw_table in table.h).
-						IF THE LEXEME IS NOT A KEYWORD, GO TO STEP 2.
-
-						2. SET a AVID TOKEN.
-						IF THE lexeme IS LONGER than VID_LEN(see token.h) CHARACTERS,
-						ONLY FIRST VID_LEN CHARACTERS ARE STORED
-						INTO THE VARIABLE ATTRIBUTE ARRAY vid_lex[](see token.h) .
-						ADD \0 AT THE END TO MAKE A C - type STRING.
-						return t;*/
-				}
-
-				/* author: john pilon
-				** version: 1.0
-				*/
-				Token aa_func03(char lexeme[]) {
-					Token token;
-
-					token.code = SVID_T;
-
-					if (strlen(lexeme) > VID_LEN-1) {
-						char temp[VID_LEN - 1];
-						strcpy(temp, lexeme);
-						strcpy(token.attribute.vid_lex, temp);
-						token.attribute.vid_lex[VID_LEN] = '$';
-						token.attribute.vid_lex[VID_LEN+1] = '\0';
-					}
-					else {
-						strcpy(token.attribute.vid_lex, lexeme);
-						token.attribute.vid_lex[strlen(lexeme)] = '\0';
-
-					}
-
-					return token;
-					/*WHEN CALLED THE FUNCTION MUST
-						1. SET a SVID TOKEN.
-						IF THE lexeme IS LONGER than VID_LEN characters,
-						ONLY FIRST VID_LEN - 1 CHARACTERS ARE STORED
-						INTO THE VARIABLE ATTRIBUTE ARRAY vid_lex[],
-						AND THEN THE $ CHARACTER IS APPENDED TO THE NAME.
-						ADD \0 AT THE END TO MAKE A C - type STRING.
-
-						return t;*/
-				}
-
-				Token aa_func08(char lexeme[]) {
-
-					/*THE FUNCTION MU CONVERT THE LEXEME TO A FLOATING POINT VALUE,
-						WHICH IS THE ATTRIBUTE FOR THE TOKEN.
-						THE VALUE MUST BE IN THE SAME RANGE AS the value of 4 - byte float in C.
-						IN CASE OF ERROR(OUT OF RANGE) THE FUNCTION MUST RETURN ERROR TOKEN
-						THE ERROR TOKEN ATTRIBUTE IS  lexeme.IF THE ERROR lexeme IS LONGER
-						than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
-						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
-						err_lex C - type string.
-						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;*/
-				}
-
-				Token aa_func05(char lexeme[]) {
-
-					/*THE FUNCTION MUST CONVERT THE LEXEME REPRESENTING A DECIMAL CONSTANT
-						TO A DECIMAL INTEGER VALUE, WHICH IS THE ATTRIBUTE FOR THE TOKEN.
-						THE VALUE MUST BE IN THE SAME RANGE AS the value of 2 - byte integer in C.
-						IN CASE OF ERROR(OUT OF RANGE) THE FUNCTION MUST RETURN ERROR TOKEN
-						THE ERROR TOKEN ATTRIBUTE IS  lexeme.IF THE ERROR lexeme IS LONGER
-						than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
-						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
-						err_lex C - type string.
-						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;*/
-				}
-
-				Token aa_func10(char lexeme[]) {
-
-					/*THE FUNCTION MUST CONVERT THE LEXEME REPRESENTING AN HEXADECIMAL CONSTANT
-						TO A DECIMAL INTEGER VALUE WHICH IS THE ATTRIBUTE FOR THE TOKEN.
-						THE VALUE MUST BE IN THE SAME RANGE AS the value of 2 - byte integer in C.
-						THIS FUNCTION IS SIMILAR TO THE FUNCTION ABOVE
-						THE MAIN DIFFERENCE IE THAT THIS FUNCTION CALLS
-						THE FUNCTION atolh(char * lexeme) WHICH CONVERTS AN ASCII STRING
-						REPRESENTING AN HEXADECIMAL NUMBER TO INTEGER VALUE
-						IN CASE OF ERROR(OUT OF RANGE) THE FUNCTION MUST RETURN ERROR TOKEN
-						THE ERROR TOKEN ATTRIBUTE IS  lexeme.IF THE ERROR lexeme IS LONGER
-						than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
-						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
-						err_lex C - type string.
-						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;*/
-				}
-
-				Token aa_func12(char lexeme[]) {
-					
-					/*THE FUNCTION SETS THE ERROR TOKEN.lexeme[] CONTAINS THE ERROR
-						THE ATTRIBUTE OF THE ERROR TOKEN IS THE lexeme ITSELF
-						AND IT MUST BE STORED in err_lex.IF THE ERROR lexeme IS LONGER
-						than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
-						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
-						err_lex C - type string.
-						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;*/
-				}
-
-				Token aa_func13(char lexeme[]) {
-
-					/*THE FUNCTION SETS THE ERROR TOKEN.lexeme[] CONTAINS THE ERROR
-						THE ATTRIBUTE OF THE ERROR TOKEN IS THE lexeme ITSELF
-						AND IT MUST BE STORED in err_lex.IF THE ERROR lexeme IS LONGER
-						than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
-						STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
-						err_lex C - type string.
-						BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE
-						return t;*/
-				}
-
-				/* author: john pilon
-				** version: 1.1
-				*/
-				long atolh(char * lexeme) {
-					unsigned char i, base;  /* counters for base exponent and lexeme index */
-					long hex = 0; /* integer conversion of hex value */
-					/* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
-					for (i = (char)strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
-						/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
-						hex += (short)pow(16, base)*(lexeme[i] <= '9' ? (short)(lexeme[i]-'0') : (short)(lexeme[i]-'A'+10));
-					}
-					return hex;
-					/*THE FUNCTION CONVERTS AN ASCII STRING
-						REPRESENTING AN HEXADECIMAL INTEGER CONSTANT TO INTEGER VALUE*/
-				}
-
-				/* author: john pilon
-				** version: 1.0
-				*/
-				int iskeyword(char * kw_lexeme) {
-					int i;
-
-					for (i = 0; i < KWT_SIZE; i++) {
-						if (strcmp(kw_lexeme, kw_table[i]) == 0) return 1;
-					}
-
-					return 0;
-				}
+/* author: john pilon
+* version: 1.0
+*/
+int iskeyword(char * kw_lexeme) {
+	int i;
+	for (i = 0; i < KWT_SIZE; i++) {
+		if (strcmp(kw_lexeme, kw_table[i]) == 0) return 1;
+	}
+	return 0;
+}//isKeyword
