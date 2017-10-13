@@ -55,6 +55,7 @@ static int char_class(char c); /* character class function */
 static int get_next_state(int, char, int *); /* state machine function */
 static int iskeyword(char * kw_lexeme); /*keywords lookup functuion */
 static long atolh(char * lexeme); /* converts hexadecimal string to decimal value */
+static int is_str(char c);
 
 /*Initializes scanner */
 int scanner_init(Buffer * sc_buf) {
@@ -80,130 +81,198 @@ Token malar_next_token(Buffer * sc_buf)
 
 	/*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
 	int lines = 0;
+	char * lexeme;
+	int i;
 
 	while (1)
 	{ 
 		c = b_getc(sc_buf);
 		switch (c)
 		{
-			case ' ':
-				continue;
-			case '{':
-				t.code = LBR_T;
-				return t;
-			case '}':
-				t.code = RBR_T;
-				return t;
-			case '(':
-				t.code = LPR_T;
-				return t;
-			case ')':
-				t.code = RPR_T;
-				return t;
-			case ',':
-				t.code = COM_T;
-				return t;
-			case ';':
-				t.code = EOS_T;
-				return t;
-			case '+':
-				t.code = ART_OP_T;
-				t.attribute.arr_op = PLUS;
-				return t;
-			case '-':
-				t.code = ART_OP_T;
-				t.attribute.arr_op = MINUS;
-				return t;
-			case '*':
-				t.code = ART_OP_T;
-				t.attribute.arr_op = MULT;
-				return t;
-			case '/':
-				t.code = ART_OP_T;
-				t.attribute.arr_op = DIV;
-				return t;
-			case '>':
+		case ' ':
+			continue;
+		case '{':
+			t.code = LBR_T;
+			return t;
+		case '}':
+			t.code = RBR_T;
+			return t;
+		case '(':
+			t.code = LPR_T;
+			return t;
+		case ')':
+			t.code = RPR_T;
+			return t;
+		case ',':
+			t.code = COM_T;
+			return t;
+		case ';':
+			t.code = EOS_T;
+			return t;
+		case '+':
+			t.code = ART_OP_T;
+			t.attribute.arr_op = PLUS;
+			return t;
+		case '-':
+			t.code = ART_OP_T;
+			t.attribute.arr_op = MINUS;
+			return t;
+		case '*':
+			t.code = ART_OP_T;
+			t.attribute.arr_op = MULT;
+			return t;
+		case '/':
+			t.code = ART_OP_T;
+			t.attribute.arr_op = DIV;
+			return t;
+		case '>':
+			t.code = REL_OP_T;
+			t.attribute.rel_op = GT;
+			return t;
+		case '<':
+			t.code = REL_OP_T;
+			t.attribute.rel_op = LT;
+			return t;
+		case '=':
+			c = b_getc(sc_buf);
+			if (c == '=') {
 				t.code = REL_OP_T;
-				t.attribute.rel_op = GT;
-				return t;
-			case '<':
-				t.code = REL_OP_T;
-				t.attribute.rel_op = LT;
-				return t;
-			case '=':
-				c = b_getc(sc_buf);
-				if (c == '=') {
-					t.code = REL_OP_T;
-					t.attribute.rel_op = EQ;
-				}
-				else if (c == ' ') {
-					t.code = ASS_OP_T;
-				}
-				else {
-					t.code = ERR_T;
-					strcpy(t.attribute.err_lex, '=' + c);
-				}
-				return t;
-			case '!':
-				c = b_getc(sc_buf);
-				if (c == '=') {
-					t.code = REL_OP_T;
-					t.attribute.rel_op = NE;
-				}
-				else if (c == '!') {
-					while (c = b_getc(sc_buf) != '\n') {
-						continue;
-					}
-					lines++;
-				}
-				else {
-					t.code = ERR_T;
-					strcpy(t.attribute.err_lex, '!' + c);
-				}
-				return t;
-			case '.':
+				t.attribute.rel_op = EQ;
+			}
+			else if (c == ' ') {
+				t.code = ASS_OP_T;
+			}
+			else {
 				t.code = ERR_T;
-
-				c = b_getc(sc_buf);
-				if (c == 'A') {
-					c = b_getc(sc_buf);
-					if (c == 'N') {
-						c = b_getc(sc_buf);
-						if (c == 'D') {
-							c = b_getc(sc_buf);
-							if (c == '.') {
-								t.code = LOG_OP_T;
-								t.attribute.log_op = AND;
-							}
-							else t.attribute.err_lex[0] = c;
-						}
-						else t.attribute.err_lex[0] = c;
-					}
-					else t.attribute.err_lex[0] = c;
+				lexeme = (char*)malloc(2);
+				lexeme[0] = '=';
+				lexeme[1] = c;
+				strcpy(t.attribute.err_lex, lexeme);
+			}
+			return t;
+		case '!':
+			c = b_getc(sc_buf);
+			if (c == '=') {
+				t.code = REL_OP_T;
+				t.attribute.rel_op = NE;
+			}
+			else if (c == '!') {
+				while (c = b_getc(sc_buf) != '\n') {
+					continue;
 				}
-				else if (c == 'O') {
+				lines++;
+			}
+			else {
+				t.code = ERR_T;
+				lexeme = (char*)malloc(2);
+				lexeme[0] = '!';
+				lexeme[1] = c;
+				strcpy(t.attribute.err_lex, lexeme);
+			}
+			return t;
+		case '.':
+			t.code = ERR_T;
+
+			c = b_getc(sc_buf);
+			if (c == 'A') {
+				c = b_getc(sc_buf);
+				if (c == 'N') {
 					c = b_getc(sc_buf);
-					if (c == 'R') {
+					if (c == 'D') {
 						c = b_getc(sc_buf);
 						if (c == '.') {
 							t.code = LOG_OP_T;
-							t.attribute.log_op = OR;
+							t.attribute.log_op = AND;
 						}
 						else t.attribute.err_lex[0] = c;
 					}
 					else t.attribute.err_lex[0] = c;
 				}
 				else t.attribute.err_lex[0] = c;
-				return t;
-			case '#':
-				t.code = SCC_OP_T;
-				return t;
-			case '\n':
-				lines++;
-				break;
-		}
-		
+			}
+			else if (c == 'O') {
+				c = b_getc(sc_buf);
+				if (c == 'R') {
+					c = b_getc(sc_buf);
+					if (c == '.') {
+						t.code = LOG_OP_T;
+						t.attribute.log_op = OR;
+					}
+					else t.attribute.err_lex[0] = c;
+				}
+				else t.attribute.err_lex[0] = c;
+			}
+			else t.attribute.err_lex[0] = c;
+			return t;
+		case '#':
+			t.code = SCC_OP_T;
+			return t;
+		case '\n':
+			lines++;
+			break;
+		case '"':
+			lexstart = b_mark(sc_buf, b_getcoffset(sc_buf) - 1);
+			b_mark(str_LTBL, b_getcoffset(str_LTBL));
+			while ((c = b_getc(sc_buf)) != '"' && !b_eob(sc_buf));
+			lexend = b_getcoffset(sc_buf) - 1;
+			if (b_eob) {
+				t.code = ERR_T;
+				for (i = 0; i < 17; i++) {
+					lexeme = b_location(sc_buf, (short)(lexstart + i));
+					strcpy(t.attribute.err_lex, lexeme);
+				}
+				for (i = 17; i < 20; i++) {
+					t.attribute.err_lex[i] = '.';
+				}
+			}
+			else {
+				t.attribute.str_offset = b_limit(str_LTBL);
+				for (i = t.attribute.str_offset; i < lexend - lexstart; i++) {
+					b_addc(str_LTBL, *b_location(sc_buf, (short)(lexstart + i)));
+				}
+				b_addc(str_LTBL, '\0');
+				t.code = STR_T;
+			}
 
+			return t;
+		default:
+			if (c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+				lexstart = b_mark(sc_buf, b_getcoffset(sc_buf) - 1);
+				while (accept == NOAS) {
+					state = get_next_state(state, c, &accept);
+					c = b_getc(sc_buf);
+				}
+				if (accept == ASWR) b_retract(sc_buf);
+
+				lexend = b_getcoffset(sc_buf);
+
+				lex_buf = b_allocate(lexend - lexstart + 1, 15, 'f');
+				b_retract(sc_buf);
+				for (i = lexend - lexstart; i >= 0; i--) {
+					b_addc(lex_buf, b_getc(sc_buf));
+				}
+				lexeme = (char*)malloc(lexend-lexstart);
+				strncpy(lexeme, sc_buf->cb_head+lexstart, lexend - lexstart);
+
+				t = aa_table[state](lexeme);
+				free(lexeme);
+				b_free(lex_buf);
+				return t;
+			}
+			else {
+				t.code = ERR_T;
+				t.attribute.err_lex[0] = c;
+			}
+		}
+
+		/*CHECK OTHER CHARS HERE if NEEDED, SET A TOKEN AND RETURN IT.
+		FOR ILLEGAL CHARACTERS SET ERROR TOKEN.
+		THE ILLEGAL CHAR IS THE ATTRIBUTE OF THE ERROR TOKEN
+		IN A CASE OF RUNTIME ERROR, THE FUNCTION MUST STORE
+		A NON-NEGATIVE NUMBER INTO THE GLOBAL VARIABLE scerrnum
+		AND RETURN AN ERROR TOKEN. THE ERROR TOKEN ATTRIBUTE MUST
+		BE THE STRING "RUN TIME ERROR: "
+		}*/
 			
 	}//while
 		
@@ -240,18 +309,12 @@ int get_next_state(int state, char c, int *accept)
 */
 int char_class(char c)
 {
-	if ((c >= 'a'&&c <= 'z') || (c >= 'A' && c <= 'Z'))
-	{return 0;}
-	else if (c=='0')
-	{return 1;}
-	else if (c>='1'&&c<='9')
-	{return 2;}
-	else if (c=='.')
-	{return 3;}
-	else if (c=='$')
-	{return 4;}
-	else
-	{return 5;}
+	if ((c >= 'a'&&c <= 'z') || (c >= 'A' && c <= 'Z')) return 0;
+	else if (c=='0') return 1;
+	else if (c>='1'&&c<='9') return 2;
+	else if (c=='.') return 3;
+	else if (c=='$') return 4;
+	else return 5;
 }//char_class
 
 /*
@@ -425,3 +488,8 @@ int iskeyword(char * kw_lexeme) {
 	}
 	return 0;
 }//isKeyword
+
+int is_str(char c) {
+	if (c <= '9' && c >= '0' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') return 1;
+	return 0;
+}
