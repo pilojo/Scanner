@@ -59,10 +59,11 @@ b_location()
 #define BUFFER_START 0     /* start of buffer */
 #define EMPTY 1            /* value for empty buffer */
 #define SUCCESS 0
-#define B_FULL
+#define B_FULL 1
+#define MAX_CAPACITY SHRT_MAX-1
 
 #ifdef B_FULL
-#define b_isfull(pBD) return pBD == NULL ? RT_FAIL1 : pBD->addc_offset
+#define b_isfull(pBD) return pBD == NULL ? RT_FAIL1 : pBD->addc_offset-pBD->capacity == 0 ? B_FULL : RT_FAIL1;
 #endif
 							/* user data type declarations */
 typedef struct BufferDescriptor {

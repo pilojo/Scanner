@@ -36,28 +36,22 @@ b_location()
 ** Author: John Pilon
 ** Version: 1.0
 ** Called functions: malloc(), calloc(), free()
-** Parameters: init_capacity(in bytes): 0..(SHRT_MAX-1); inc_factor: 0..100 for mode -1(percentage), 0..255 for mode 1(in bytes); o_mode: -1..1
-** Return Value: Fully allocated Buffer*
+** Parameters: init_capacity(in bytes): 0..(MAX_CAPACITY); inc_factor: 0..100 for mode -1(percentage), 0..255 for mode 1(in bytes); o_mode: -1..1
+** Return Value: Fully allocated Buffer*, NULL on fail
 ** Algorithm: Allocate memory for the buffer descriptor and char array, check o_mode for type, return buffer descriptor
 */
 Buffer *b_allocate(short init_capacity, char inc_factor, char o_mode) {
 	Buffer *newBuffer; /* new buffer to be created */
 	char *charArry; /* char array for the buffer */
+	char mode, error = 0;
 
-					/* If it is a fixed-size of 0, it cannot be created */
+	/* If it is a fixed-size of 0, it cannot be created */
 	if (o_mode == 'f' && init_capacity == 0) {
 		return NULL;
 	}
 
 	/*Check for negative values*/
 	if (init_capacity < 0 || init_capacity == SHRT_MAX) return NULL;
-
-	/* allocating the size of a buffer to the pointer */
-	newBuffer = (pBuffer)calloc(1, sizeof(Buffer));
-	if (newBuffer == NULL) return NULL;
-
-	/* allocating the initial capacity of the char array */
-	charArry = (char*)malloc(sizeof(char)*init_capacity);
 
 	/* switch the buffer to fixed mode if the inc_factor is 0 */
 	if (inc_factor == 0) o_mode = 'f';
@@ -66,45 +60,42 @@ Buffer *b_allocate(short init_capacity, char inc_factor, char o_mode) {
 	switch (o_mode) {
 		/* initialize fixed mode */
 	case 'f':
-		newBuffer->mode = FIXED_MODE;
-		newBuffer->inc_factor = 0;
+		mode = FIXED_MODE;
+		inc_factor = 0;
 		break;
 
 		/* initialize additive mode */
 	case 'a':
 		if ((unsigned char)inc_factor > 0) {
-			newBuffer->mode = ADDITIVE_MODE;
-			newBuffer->inc_factor = inc_factor;
+			mode = ADDITIVE_MODE;
 		}
-		/* Program should never reach this return! */
-		else {
-			free(newBuffer);
-			free(charArry);
-			return NULL;
-		}
+		/* Program should never reach this point! */
+		else error = !error;
 		break;
 
 		/* initialize multiplicative mode */
 	case 'm':
 		if (inc_factor <= MAX_M_MODE_INC && inc_factor > 0) {
-			newBuffer->mode = MULTIPLICATIVE_MODE;
-			newBuffer->inc_factor = inc_factor;
+			mode = MULTIPLICATIVE_MODE;
 		}
-		else {
-			free(newBuffer);
-			free(charArry);
-			return NULL;
-		}
-		break;
+		else error = !error;
 
-		/* Incorrect mode given */
-	default:
-		free(newBuffer);
-		free(charArry);
-		return NULL;
+		break;
 	}
 
+	if (error) return NULL;
+	/* allocating the size of a buffer to the pointer */
+	newBuffer = (pBuffer)calloc(1, sizeof(Buffer));
+	if (newBuffer == NULL) return NULL;
+
+	/* allocating the initial capacity of the char array */
+	charArry = (char*)malloc(init_capacity);
+	/* Allow for zero size initial capacity while catching allocation errors */
+	if (!charArry && init_capacity > 0) return NULL;
+
 	/* assign remaining structure members */
+	newBuffer->mode = mode;
+	newBuffer->inc_factor = inc_factor;
 	newBuffer->cb_head = charArry;
 	newBuffer->capacity = init_capacity;
 
@@ -116,15 +107,15 @@ Buffer *b_allocate(short init_capacity, char inc_factor, char o_mode) {
 ** Version: 1.0
 ** Called functions: realloc()
 ** Parameters: pBD: a valid Buffer pointer, symbol: any char
-** Return Value: Buffer pointer
+** Return Value: Buffer pointer, NULL on fail
 ** Algorithm: Check if there's room for a symbol, if not, reallocate by inc_factor and o_mode, then add symbol
 */
 pBuffer b_addc(pBuffer const pBD, char symbol) {
-	unsigned short newCapacity = 0; /* unsigned capacity variable to check for overflow */
+	unsigned long newCapacity = 0; /* unsigned capacity variable to check for overflow */
 	char *tempStorage = NULL;	/* used to check if the memory address changed */
 
 								/* check for valid parameters */
-	if (pBD == NULL) return NULL;
+	if (!pBD) return NULL;
 
 	/* Check if there's room for a symbol */
 	if (pBD->addc_offset < pBD->capacity) {
@@ -135,18 +126,18 @@ pBuffer b_addc(pBuffer const pBD, char symbol) {
 		if (pBD->mode == ADDITIVE_MODE) {
 			/* Check if capacity will overflow */
 			newCapacity = pBD->capacity + (unsigned char)pBD->inc_factor;
-			if (newCapacity > SHRT_MAX - 1) return NULL;
-			tempStorage = (char*)realloc(pBD->cb_head, sizeof(char)*((unsigned char)pBD->inc_factor + pBD->capacity)); /* assign array new capacity */
+			if (newCapacity > MAX_CAPACITY) return NULL;
+			tempStorage = (char*)realloc(pBD->cb_head, ((unsigned char)pBD->inc_factor + pBD->capacity)); /* assign array new capacity */
 		}
 		else {
 			/* Check if capacity is already maximum */
-			if (pBD->capacity == (SHRT_MAX - 1)) return NULL;
-			newCapacity = (unsigned short)(pBD->capacity + ((((SHRT_MAX - 1) - pBD->capacity) * pBD->inc_factor) / 100));
+			if (pBD->capacity >= (MAX_CAPACITY)) return NULL;
+			newCapacity = (long)(pBD->capacity + ((((MAX_CAPACITY) - pBD->capacity) * pBD->inc_factor) / 100));
 			/* Fix for calculation resulting in 0 growth when there is still memory available to be used */
-			if (newCapacity == pBD->capacity) newCapacity = SHRT_MAX - 1;
+			if (newCapacity == pBD->capacity) newCapacity = MAX_CAPACITY;
 			/* Check if capacity overflowed */
-			if (newCapacity >= SHRT_MAX - 1) newCapacity = SHRT_MAX - 1;
-			tempStorage = (char*)realloc(pBD->cb_head, sizeof(char)*newCapacity); /* assign array with new capacity */
+			if (newCapacity >= MAX_CAPACITY) newCapacity = MAX_CAPACITY;
+			tempStorage = (char*)realloc(pBD->cb_head, newCapacity); /* assign array with new capacity */
 		}
 
 		/* Check if array was reallocated successfully */
@@ -155,9 +146,9 @@ pBuffer b_addc(pBuffer const pBD, char symbol) {
 		/* set reallocation flag if the memory location changed */
 		if (pBD->cb_head != tempStorage) {
 			pBD->r_flag = SET_R_FLAG;
+			pBD->cb_head = tempStorage;
 		}
 
-		pBD->cb_head = tempStorage;
 		pBD->capacity = newCapacity;
 
 		pBD->cb_head[pBD->addc_offset++] = symbol;
@@ -176,14 +167,14 @@ pBuffer b_addc(pBuffer const pBD, char symbol) {
 ** Return value: int: -1 for fail, 0 for success
 */
 int b_clear(Buffer *const pBD) {
-	if (pBD != NULL) {
+	if (pBD) {
 		pBD->addc_offset = BUFFER_START;
 		pBD->getc_offset = BUFFER_START;
 		pBD->markc_offset = BUFFER_START;
 		pBD->eob = !EOB;
 		return SUCCESS;
 	}
-	else return RT_FAIL1;
+	return RT_FAIL1;
 }
 
 /* Purpose: Frees all memory on the heap
@@ -195,12 +186,12 @@ int b_clear(Buffer *const pBD) {
 */
 void b_free(Buffer *const pBD) {
 	char *cb_head; /* temporary pointer to help free memory */
-	if (pBD != NULL) {
+	if (pBD) {
 		cb_head = pBD->cb_head;
 		free(cb_head);
 		free(pBD);
 	}
-	cb_head = NULL; /* Free dangling pointer */
+	pBD->cb_head = NULL; /* Free dangling pointer */
 }
 
 /* Purpose: Checks if the buffer is full
@@ -213,7 +204,7 @@ void b_free(Buffer *const pBD) {
 */
 #ifndef B_FULL
 int b_isfull(Buffer *const pBD) {
-	return pBD == NULL ? RT_FAIL1 : pBD->eob;
+	return !pBD ? RT_FAIL1 : pBD->addc_offset-pBD->capacity == 0 ? B_FULL : RT_FAIL1;
 }
 #endif
 
@@ -225,7 +216,7 @@ int b_isfull(Buffer *const pBD) {
 ** Return value: short: -1 on fail, addc_offset otherwise
 */
 short b_limit(Buffer *const pBD) {
-	return pBD == NULL ? RT_FAIL1 : pBD->addc_offset;
+	return !pBD ? RT_FAIL1 : pBD->addc_offset;
 }
 
 /* Purpose: Returns the maximum amount of possible characters in the buffer
@@ -236,7 +227,7 @@ short b_limit(Buffer *const pBD) {
 ** Return value: short: -1 on fail, capacity otherwise
 */
 short b_capacity(Buffer *const pBD) {
-	return pBD == NULL ? RT_FAIL1 : pBD->capacity;
+	return !pBD ? RT_FAIL1 : pBD->capacity;
 }
 
 /* Purpose: Returns markc_offset
@@ -250,8 +241,7 @@ short b_mark(Buffer *const pBD, short mark) {
 	if (mark > pBD->addc_offset || mark < BUFFER_START) {
 		return RT_FAIL1;
 	}
-	pBD->markc_offset = mark;
-	return pBD->markc_offset;
+	return pBD->markc_offset = mark;
 }
 
 /* Purpose: Returns operating mode
@@ -259,10 +249,10 @@ short b_mark(Buffer *const pBD, short mark) {
 ** Version 1.0
 ** Called functions: N/A
 ** Parameters: pBD: A valid Buffer pointer
-** Return value: int: value of mode
+** Return value: int: value of mode, -1 on fail
 */
 int b_mode(Buffer *const pBD) {
-	return pBD == NULL ? RT_FAIL1 : pBD->mode;
+	return !pBD ? RT_FAIL1 : pBD->mode;
 }
 
 /* Purpose: Returns inc_factor
@@ -273,7 +263,7 @@ int b_mode(Buffer *const pBD) {
 ** Return Value: size_t: value of inc_factor
 */
 size_t b_incfactor(Buffer *const pBD) {
-	return pBD == NULL ? RT_FAIL256 : (unsigned char)pBD->inc_factor;
+	return !pBD ? RT_FAIL256 : (unsigned char)pBD->inc_factor;
 }
 
 
@@ -297,12 +287,10 @@ int b_load(FILE * const fi, Buffer * const pBD)
 		/* Check if add was successful */
 		if (b_addc(pBD, c) == NULL)
 		{
-			fclose(fi);
 			return LOAD_FAIL;
 		}
 		numAdded++;
 	}
-	fclose(fi);
 	return numAdded;
 }
 
@@ -314,9 +302,9 @@ int b_load(FILE * const fi, Buffer * const pBD)
 ** Return value: int: -1 on fail, 0 on false, 1 on true
 */
 int b_isempty(Buffer *const pBD) {
-	if (pBD == NULL) return RT_FAIL1;
+	if (!pBD) return RT_FAIL1;
 	else if (pBD->addc_offset > BUFFER_START) return !EMPTY;
-	else return EMPTY;
+	return EMPTY;
 }
 
 /* Purpose: Returns eob
@@ -327,7 +315,7 @@ int b_isempty(Buffer *const pBD) {
 ** Return value: int: -1 on fail, eob otherwise
 */
 int b_eob(Buffer *const pBD) {
-	return pBD == NULL ? RT_FAIL1 : pBD->eob;
+	return !pBD ? RT_FAIL1 : pBD->eob;
 }
 
 /* Purpose: Returns character at getc_offset
@@ -338,7 +326,7 @@ int b_eob(Buffer *const pBD) {
 ** Return value: char: the char at getc_offset
 */
 char b_getc(Buffer *const pBD) {
-	if (pBD == NULL) return RT_FAIL2;
+	if (!pBD) return RT_FAIL2;
 	else {
 		/* set eob flag if the getc_offset reaches the end of the buffer */
 		if (pBD->getc_offset >= pBD->addc_offset) {
@@ -364,22 +352,22 @@ char b_getc(Buffer *const pBD) {
 int b_print(Buffer *const pBD) {
 	int numPrinted = 0; /* Number of characters printed */
 	char c; /* temporary char for comparison */
-	if (pBD == NULL) return RT_FAIL1;
+	if (!pBD) return RT_FAIL1;
 	/* Check for empty buffer */
 	else if (pBD->addc_offset == BUFFER_START) {
 		printf("Empty buffer\n");
 		return EMPTY;
 	}
-	else {
-		/* Loop until end of buffer and print contents */
-		while (1) {
-			c = b_getc(pBD);
-			if (b_eob(pBD)) break;
-			printf("%c", c);
-			numPrinted++;
-		}
-		printf("\n");
+
+	/* Loop until end of buffer and print contents */
+	while (1) {
+		c = b_getc(pBD);
+		if (b_eob(pBD)) break;
+		printf("%c", c);
+		numPrinted++;
 	}
+
+	printf("\n");
 	return numPrinted;
 }
 
@@ -393,8 +381,10 @@ int b_print(Buffer *const pBD) {
 */
 Buffer *b_compact(Buffer *const pBD, char symbol) {
 	char *tempStorage; /* temporary char array to be assigned */
+	pBD->r_flag = !SET_R_FLAG;
 
-	if (pBD == NULL) return NULL;
+	if (!pBD) return NULL;
+	if (pBD->addc_offset == SHRT_MAX) pBD->addc_offset--;
 
 	tempStorage = (char*)realloc(pBD->cb_head, pBD->addc_offset + 1);
 	if (tempStorage == NULL) return NULL;
@@ -402,9 +392,9 @@ Buffer *b_compact(Buffer *const pBD, char symbol) {
 	/* Set reallocation flag if the memory location has moved */
 	if (tempStorage != pBD->cb_head) {
 		pBD->r_flag = SET_R_FLAG;
+		pBD->cb_head = tempStorage;
 	}
 
-	pBD->cb_head = tempStorage;
 	pBD->capacity = pBD->addc_offset + 1;
 	pBD->cb_head[pBD->addc_offset++] = symbol;
 
@@ -419,7 +409,7 @@ Buffer *b_compact(Buffer *const pBD, char symbol) {
 ** Return Value: char: value of r_flag
 */
 char b_rflag(Buffer *const pBD) {
-	return pBD == NULL ? RT_FAIL1 : pBD->r_flag;
+	return !pBD ? RT_FAIL1 : pBD->r_flag;
 }
 
 /* Purpose: move the getc_offset back one space
@@ -430,12 +420,11 @@ char b_rflag(Buffer *const pBD) {
 ** Return Value: short: value of getc_offset after move
 */
 short b_retract(Buffer *const pBD) {
-	if (pBD == NULL) return RT_FAIL1;
-	else if (pBD->getc_offset == BUFFER_START || pBD->getc_offset == pBD->markc_offset) return pBD->getc_offset;
-	else {
-		pBD->getc_offset--;
-		return pBD->getc_offset;
-	}
+	if (!pBD) return RT_FAIL1;
+	else if (pBD->getc_offset == BUFFER_START) return pBD->getc_offset;
+	
+	pBD->getc_offset--;
+	return pBD->getc_offset;
 }
 
 /* Purpose: reset the getc_offset to the markc_offset
@@ -446,11 +435,8 @@ short b_retract(Buffer *const pBD) {
 ** Return Value: short: value of getc_offset after move
 */
 short b_reset(Buffer *const pBD) {
-	if (pBD == NULL) return RT_FAIL1;
-	else {
-		pBD->getc_offset = pBD->markc_offset;
-	}
-	return pBD->getc_offset;
+	if (!pBD) return RT_FAIL1;	
+	return pBD->getc_offset = pBD->markc_offset;
 }
 
 /* Purpose: return getc_offset
@@ -461,7 +447,7 @@ short b_reset(Buffer *const pBD) {
 ** Return Value: short: value of getc_offset
 */
 short b_getcoffset(Buffer *const pBD) {
-	return pBD == NULL ? RT_FAIL1 : pBD->getc_offset;
+	return !pBD ? RT_FAIL1 : pBD->getc_offset;
 }
 
 /* Purpose: reset getc_offset and markc_offset to beginning of buffer
@@ -472,7 +458,7 @@ short b_getcoffset(Buffer *const pBD) {
 ** Return value: int: -1 on fail, 0 on success
 */
 int b_rewind(Buffer *const pBD) {
-	if (pBD == NULL) return RT_FAIL1;
+	if (!pBD) return RT_FAIL1;
 	else {
 		pBD->getc_offset = BUFFER_START;
 		pBD->markc_offset = BUFFER_START;
@@ -488,9 +474,9 @@ int b_rewind(Buffer *const pBD) {
 ** Return value: char: value of cb_head at loc_offset
 */
 char *b_location(Buffer *const pBD, short loc_offset) {
-	if (pBD == NULL || pBD->cb_head == NULL) return NULL;
+	if (!pBD || pBD->cb_head == NULL) return NULL;
 
 	if (loc_offset < 0 || loc_offset >= pBD->addc_offset) return NULL;
 
-	return &(pBD->cb_head[loc_offset]);
+	return pBD->cb_head+loc_offset;
 }
