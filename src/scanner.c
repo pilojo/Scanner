@@ -1,16 +1,29 @@
-/* Filename: scanner.c
-/* PURPOSE:
-*    SCANNER.C: Functions implementing a Lexical Analyzer (Scanner)
-*    as required for CST8152, Assignment #2
-*    scanner_init() must be called before using the scanner.
-*    The file is incomplete;
-*    Provided by: Svillen Ranev
-*    Version: 1.17.2
-*    Date: 1 October 2017
-*******************************************************************
-*    REPLACE THIS HEADER WITH YOUR HEADER
-*******************************************************************
+/* File name: scanner.c
+** Compiler: MS Visual Studio 2015
+** Authors:
+**			John Pilon,		040822687
+**			Daniel Brenot,	040837035
+** Course: CST8152-Compilers, Lab 012
+** Date: September 16th, 2017
+** Professor: Sv. Ranev
+** Purpose: Definitions of all functions declared in token.h and table.h; All functions relate to the tasks of a scanner
+** Function list:
+char_class()
+get_next_state()
+isKeyword()
+atolh()
+scanner_init()
+malar_next_token()
+get_next_state()
+aa_func02()
+aa_func03()
+aa_func05()
+aa_func08()
+aa_func10()
+aa_func12()
+aa_func13()
 */
+
 
 /* The #define _CRT_SECURE_NO_WARNINGS should be used in MS Visual Studio projects
 * to suppress the warnings about using "unsafe" functions like fopen()
@@ -25,10 +38,8 @@
 #include <string.h>  /* string functions */
 #include <limits.h>  /* integer types constants */
 #include <float.h>   /* floating-point types constants */
-#include <math.h>
-
-/*#define NDEBUG        to suppress assert() call */
-#include <assert.h>  /* assert() prototype */
+#include <math.h>	 /**/
+#include <assert.h>	 /**/
 
 /* project header files */
 #include "buffer.h"
@@ -55,9 +66,15 @@ static int char_class(char c); /* character class function */
 static int get_next_state(int, char, int *); /* state machine function */
 static int iskeyword(char * kw_lexeme); /*keywords lookup functuion */
 static long atolh(char * lexeme); /* converts hexadecimal string to decimal value */
-static int is_str(char c);
 
-/*Initializes scanner */
+								  /* Purpose: Initialises a scanner that searches a buffer
+								  ** Author: John Pilon
+								  ** Version: 1.0
+								  ** Called functions: malloc(), calloc(), free()
+								  ** Parameters: sc_buf: a valid pointer to an initialised buffer
+								  ** Return Value: EXIT_SUCCESS if the scanner was initialised properly;EXIT_FAILURE otherwise
+								  ** Algorithm: Resets the buffer and prepares it to be read by the scanner
+								  */
 int scanner_init(Buffer * sc_buf) {
 	if (b_isempty(sc_buf)) return EXIT_FAILURE;/*1*/
 											   /* in case the buffer has been read previously  */
@@ -65,9 +82,16 @@ int scanner_init(Buffer * sc_buf) {
 	b_clear(str_LTBL);
 	line = 1;
 	return EXIT_SUCCESS;/*0*/
-	/*   scerrnum = 0;  *//*no need - global ANSI C */
 }
 
+/* Purpose: To retrieve the next token stored in the buffer
+** Author: John Pilon
+** Version: 1.0
+** Called functions: b_getc()
+** Parameters: sc_buf : a valid pointer to an initialised buffer
+** Return Value: A token with the propper error code and attribute value
+** Algorithm: Gets the next token in the buffer
+*/
 Token malar_next_token(Buffer * sc_buf)
 {
 	Token t; /* token to return after recognition */
@@ -79,7 +103,7 @@ Token malar_next_token(Buffer * sc_buf)
 
 
 
-	/*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
+					   /*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
 	int lines = 0;
 	char * lexeme;
 	int i;
@@ -88,12 +112,12 @@ Token malar_next_token(Buffer * sc_buf)
 
 		scerrnum = -1;
 
-		return aa_table[ES]("RUN TIME ERROR: "); 
+		return aa_table[ES]("RUN TIME ERROR: ");
 
 	}
 
 	while (1)
-	{ 
+	{
 		c = b_getc(sc_buf);
 		switch (c)
 		{
@@ -101,7 +125,7 @@ Token malar_next_token(Buffer * sc_buf)
 			t.code = SEOF_T;
 			return t;
 		case '\0':
-			t.code = SEOF_T; 
+			t.code = SEOF_T;
 			return t;
 		case ' ':
 			continue;
@@ -183,7 +207,7 @@ Token malar_next_token(Buffer * sc_buf)
 				strcpy(lexeme, "!" + c);
 				strcpy(t.attribute.err_lex, lexeme);
 			}
-			return t; 
+			return t;
 		case '.':
 			b_mark(sc_buf, b_getcoffset(sc_buf));
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
@@ -246,9 +270,9 @@ Token malar_next_token(Buffer * sc_buf)
 				for (i = lexend - lexstart; i >= 0; i--) {
 					b_addc(lex_buf, b_getc(sc_buf));
 				}
-				lexeme = (char*)malloc(lexend-lexstart);
-				strncpy(lexeme, sc_buf->cb_head+lexstart, lexend - lexstart);
-				if (aa_table[state] != NULL){
+				lexeme = (char*)malloc(lexend - lexstart);
+				strncpy(lexeme, sc_buf->cb_head + lexstart, lexend - lexstart);
+				if (aa_table[state] != NULL) {
 					t = aa_table[state](lexeme);
 					free(lexeme);
 					b_free(lex_buf);
@@ -260,7 +284,7 @@ Token malar_next_token(Buffer * sc_buf)
 					b_free(lex_buf);
 					return t;
 				}
-				
+
 				return t;
 			}
 			else {
@@ -277,14 +301,17 @@ Token malar_next_token(Buffer * sc_buf)
 		AND RETURN AN ERROR TOKEN. THE ERROR TOKEN ATTRIBUTE MUST
 		BE THE STRING "RUN TIME ERROR: "
 		}*/
-			
-	}//while
-		
-}//malar_next_token
 
-/*
-* author:
-* version: 
+	}
+}
+
+/* Purpose: To find the next token state given the current state and the next character
+** Author: Svillen Ranev
+** Version: 1.0
+** Called functions: printf(), exit()
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 int get_next_state(int state, char c, int *accept)
 {
@@ -292,38 +319,56 @@ int get_next_state(int state, char c, int *accept)
 	int next;
 	col = char_class(c);
 	next = st_table[state][col];
-	#ifdef DEBUG
-		printf("Input symbol: %c Row: %d Column: %d Next: %d \n", c, state, col, next);
-	#endif
+#ifdef DEBUG
+	printf("Input symbol: %c Row: %d Column: %d Next: %d \n", c, state, col, next);
+#endif
 	assert(next != IS);
-	#ifdef DEBUG
-		if (next == IS) {
-			printf("Scanner Error: Illegal state:\n");
-			printf("Input symbol: %c Row: %d Column: %d\n", c, state, col);
-			exit(1);
-		}
-	#endif
+#ifdef DEBUG
+	if (next == IS) {
+		printf("Scanner Error: Illegal state:\n");
+		printf("Input symbol: %c Row: %d Column: %d\n", c, state, col);
+		exit(1);
+	}
+#endif
 	*accept = as_table[next];
 	return next;
-}//get_next_state
+}
 
-/*
-** author: Daniel Brenot
-** version: 1.0
+/* Purpose:
+** Author: Daniel Brenot
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 int char_class(char c)
 {
-	if ((c >= 'a'&&c <= 'z') || (c >= 'A' && c <= 'Z')) return 0;
-	else if (c=='0') return 1;
-	else if (c>='1'&&c<='9') return 2;
-	else if (c=='.') return 3;
-	else if (c=='$') return 4;
-	else return 5;
-}//char_class
+	if (c=='x')
+	{return 2;}
+	else if ((c >= 'a'&&c <= 'z') || (c >= 'G' && c <= 'Z'))
+	{return 0;}
+	else if (c == '0')
+	{return 1;}
+	else if (c >='A' && c <='F')
+	{return 3;}
+	else if (c >= '1'&&c <= '9')
+	{return 4;}
+	else if (c == '.')
+	{return 5;}
+	else if (c == '$')
+	{return 6;}
+	else
+	{return 7;}
+}
 
-/*
-** author: John Pilon
-** version: 1.0
+/* Purpose: Checks if the lexeme is a keyword and sets the token accordingly
+** Author: John Pilon
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 Token aa_func02(char lexeme[])
 {
@@ -344,7 +389,7 @@ Token aa_func02(char lexeme[])
 			char temp[VID_LEN];
 			strcpy(temp, lexeme);
 			strcpy(token.attribute.vid_lex, temp);
-			token.attribute.vid_lex[VID_LEN+1] = '\0';
+			token.attribute.vid_lex[VID_LEN + 1] = '\0';
 		}
 		else {
 			strcpy(token.attribute.vid_lex, lexeme);
@@ -354,22 +399,27 @@ Token aa_func02(char lexeme[])
 	}
 
 	return token;
-}//aa_func02
+}
 
-/* author: john pilon
-** version: 1.0
+/* Purpose: Sets the token as a string token and ensures it does not exceed max string size
+** Author: John Pilon
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 Token aa_func03(char lexeme[]) {
 	Token token;
 
 	token.code = SVID_T;
 
-	if (strlen(lexeme) > VID_LEN-1) {
+	if (strlen(lexeme) > VID_LEN - 1) {
 		char temp[VID_LEN - 1];
 		strcpy(temp, lexeme);
 		strcpy(token.attribute.vid_lex, temp);
 		token.attribute.vid_lex[VID_LEN] = '$';
-		token.attribute.vid_lex[VID_LEN+1] = '\0';
+		token.attribute.vid_lex[VID_LEN + 1] = '\0';
 	}
 	else {
 		strcpy(token.attribute.vid_lex, lexeme);
@@ -378,122 +428,184 @@ Token aa_func03(char lexeme[]) {
 
 	return token;
 
-}//aa_func03
+}
 
-/*
-* author:
-* version:
+/* Purpose:  Converts a decimal lexeme to a floating point value token
+** Author: Daniel Brenot
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
-Token aa_func08(char lexeme[]) {
+Token aa_func05(char lexeme[]) {
 	Token t;
-	/*THE FUNCTION MU CONVERT THE LEXEME TO A FLOATING POINT VALUE,
-		WHICH IS THE ATTRIBUTE FOR THE TOKEN.
-		THE VALUE MUST BE IN THE SAME RANGE AS the value of 4 - byte float in C.
-		IN CASE OF ERROR(OUT OF RANGE) THE FUNCTION MUST RETURN ERROR TOKEN
-		THE ERROR TOKEN ATTRIBUTE IS  lexeme.IF THE ERROR lexeme IS LONGER
-		than ERR_LEN characters, ONLY THE FIRST ERR_LEN - 3 characters ARE
-		STORED IN err_lex.THEN THREE DOTS ... ARE ADDED TO THE END OF THE
-		err_lex C - type string.
-		BEFORE RETURNING THE FUNCTION MUST SET THE APROPRIATE TOKEN CODE*/
-	return t;
-}//aa_func08
-
-/*
-* author: Daniel Brenot
-*
-* converts a base 10 string to a token storing an integer;TODO hat about negatives?
-*/
-Token aa_func05(char lexeme[])
-{
-	Token t;
-	short i;
-	short size = sizeof(lexeme);
-	for (i=0; i<size; i++)
+	char decimal = strchr(lexeme, '.') - lexeme;
+	char i, base;
+	float flt = 0;
+	for (i = (char)strlen(lexeme) - 1, base = decimal - (i); i >= 0; i--)
 	{
-		t.attribute.int_value += (lexeme[i]-'0') *pow(10,size-i);
-		if (t.attribute.int_value < 0) 
-		{ 
-			if (sizeof(lexeme) > ERR_LEN)
+		if (lexeme[i] == '.') { continue; }
+		else
+		{
+			flt += ((float)(pow(10, base)*(lexeme[i] - '0')));
+			if (flt < 0)
 			{
-				strcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
+				memcpy(t.attribute.err_lex, &lexeme, ERR_LEN - 3);
 				t.attribute.err_lex[ERR_LEN - 3] = '.';
 				t.attribute.err_lex[ERR_LEN - 2] = '.';
 				t.attribute.err_lex[ERR_LEN - 1] = '.';
 				t.attribute.err_lex[ERR_LEN] = '\0';
 				t.code = ERR_T;
+				return t;
 			}
-			else
-			{
-				strcpy(t.attribute.err_lex, lexeme);
-				t.attribute.err_lex[size] = '\0';
-				t.code = INL_T;
-			}
-			break; 
+			base++;
 		}
 	}
+	t.attribute.flt_value = flt;
 	return t;
-}//aa_func05
+}
 
-/*
-* author:
-* version:
-* TODO
+/* Purpose: Converts a decimal into an integer token
+** Author: Svillen Ranev
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
+*/
+Token aa_func08(char lexeme[])
+{
+	Token t;
+	char i, base;
+	long dec = 0;
+	for (i = (char)strlen(lexeme) - 1, base = 0; i >= 0; i--, base++)
+	{
+		dec += ((short)pow(10, base))*((short)(lexeme[i] - '0'));
+		if (dec < 0)
+		{
+			memcpy(t.attribute.err_lex, &lexeme, ERR_LEN - 3);
+			t.attribute.err_lex[ERR_LEN - 3] = '.';
+			t.attribute.err_lex[ERR_LEN - 2] = '.';
+			t.attribute.err_lex[ERR_LEN - 1] = '.';
+			t.attribute.err_lex[ERR_LEN] = '\0';
+			t.code = ERR_T;
+			return t;
+		}
+	}
+	t.attribute.int_value = dec;
+	return t;
+}
+
+/* Purpose: Converts a hexidecimal integer literal lexeme to a integer token
+** Author: Daniel Brenot
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 Token aa_func10(char lexeme[])
 {
 	Token t;
-
+	t.attribute.int_value = atolh(lexeme);
+	if (t.attribute.int_value < 0)
+	{
+		memcpy(t.attribute.err_lex, &lexeme, ERR_LEN - 3);
+		t.attribute.err_lex[ERR_LEN - 3] = '.';
+		t.attribute.err_lex[ERR_LEN - 2] = '.';
+		t.attribute.err_lex[ERR_LEN - 1] = '.';
+		t.attribute.err_lex[ERR_LEN] = '\0';
+		t.code = ERR_T;
+	}
 	return t;
-}//aa_func10
+}
 
-/*
-* author:
-* version:
-* TODO
+/* Purpose: Returns an error token with a truncated lexeme as the attribute
+** Author: Daniel Brenot
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 Token aa_func12(char lexeme[])
 {
 	Token t;
+	if (strlen(lexeme)>ERR_LEN)
+	{
+		memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
+		t.attribute.err_lex[ERR_LEN - 3] = '.';
+		t.attribute.err_lex[ERR_LEN - 2] = '.';
+		t.attribute.err_lex[ERR_LEN - 1] = '.';
+		t.attribute.err_lex[ERR_LEN] = '\0';
+	}
+	else
+	{
+		memcpy(t.attribute.err_lex, lexeme, ERR_LEN);
+	}
+	t.code = ERR_T;
 	return t;
-}//aa_func12
+}
 
-/*
-* author:
-* version:
-* TODO
+/* Purpose: Returns an error token with a truncated lexeme as the attribute; Retracts the buffer
+** Author: Daniel Brenot
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 Token aa_func13(char lexeme[])
 {
 	Token t;
+	if (strlen(lexeme)>ERR_LEN)
+	{
+		memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
+		t.attribute.err_lex[ERR_LEN - 3] = '.';
+		t.attribute.err_lex[ERR_LEN - 2] = '.';
+		t.attribute.err_lex[ERR_LEN - 1] = '.';
+		t.attribute.err_lex[ERR_LEN] = '\0';
+	}
+	else
+	{
+		memcpy(t.attribute.err_lex, lexeme, ERR_LEN);
+	}
+	t.code = ERR_T;
 	return t;
-}//aa_func13
+}
 
-/* author: john pilon
-* version: 1.1
+/* Purpose:
+** Author: John Pilon
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 long atolh(char * lexeme) {
-	char i, base;  /* counters for base exponent and lexeme index */
+	unsigned char i, base;  /* counters for base exponent and lexeme index */
 	long hex = 0; /* integer conversion of hex value */
 				  /* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
-	for (i = (char)strlen(lexeme) - 1, base = 0; i >= 0; i--, base++) {
+	for (i = (char)strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
 		/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
 		hex += (short)pow(16, base)*(lexeme[i] <= '9' ? (short)(lexeme[i] - '0') : (short)(lexeme[i] - 'A' + 10));
 	}
 	return hex;
-}//atolh
+}
 
-/* author: john pilon
-* version: 1.0
+/* Purpose:
+** Author: John Pilon
+** Version: 1.0
+** Called functions:
+** Parameters:
+** Return Value:
+** Algorithm:
 */
 int iskeyword(char * kw_lexeme) {
 	int i;
 	for (i = 0; i < KWT_SIZE; i++) {
-		if (strcmp(kw_lexeme, kw_table[i]) == 0) return i;
+		if (strcmp(kw_lexeme, kw_table[i]) == 0) return 1;
 	}
-	return -1;
-}//isKeyword
-
-int is_str(char c) {
-	if (c <= '9' && c >= '0' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') return 1;
 	return 0;
 }
