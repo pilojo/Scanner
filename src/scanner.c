@@ -184,9 +184,7 @@ Token malar_next_token(Buffer * sc_buf)
 			}
 			else {
 				t.code = ERR_T;
-				lexeme = (char*)malloc(2);
-				strcpy(lexeme, "=" + c);
-				strcpy(t.attribute.err_lex, lexeme);
+				strcpy(t.attribute.err_lex, "=" + c);
 			}
 			return t;
 		case '!':
@@ -196,18 +194,16 @@ Token malar_next_token(Buffer * sc_buf)
 				t.attribute.rel_op = NE;
 			}
 			else if (c == '!') {
-				while (c = b_getc(sc_buf) != '\n') {
+				while (c = b_getc(sc_buf) != '\n') { /* Warning C4706 acknowledgement */
 					continue;
 				}
 				lines++;
 			}
 			else {
 				t.code = ERR_T;
-				lexeme = (char*)malloc(2);
-				strcpy(lexeme, "!" + c);
-				strcpy(t.attribute.err_lex, lexeme);
+				strcpy(t.attribute.err_lex, "!"+c);
 			}
-			return t;
+			return t; /* Warning C4701 acknowledgement: t will always be used */
 		case '.':
 			b_mark(sc_buf, b_getcoffset(sc_buf));
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
@@ -237,7 +233,7 @@ Token malar_next_token(Buffer * sc_buf)
 			if (b_eob) {
 				t.code = ERR_T;
 				lexeme = (char*)malloc(17);
-				strncpy(lexeme, b_location(sc_buf, (short)(lexstart)), 17);
+				lexeme = b_location(sc_buf, (short)(lexstart));
 				strcpy(t.attribute.err_lex, lexeme);
 				for (i = 17; i < 20; i++) {
 					t.attribute.err_lex[i] = '.';
@@ -398,7 +394,7 @@ Token aa_func02(char lexeme[])
 		token.code = AVID_T;
 	}
 
-	return token;
+	return token; /* Warning C4701 acknowledgement: token will always be used */
 }
 
 /* Purpose: Sets the token as a string token and ensures it does not exceed max string size
@@ -440,7 +436,7 @@ Token aa_func03(char lexeme[]) {
 */
 Token aa_func05(char lexeme[]) {
 	Token t;
-	char decimal = strchr(lexeme, '.') - lexeme;
+	char decimal =(char)(strchr(lexeme, '.') - lexeme);
 	char i, base;
 	float flt = 0;
 	for (i = (char)strlen(lexeme) - 1, base = decimal - (i); i >= 0; i--)
@@ -531,21 +527,7 @@ Token aa_func10(char lexeme[])
 */
 Token aa_func12(char lexeme[])
 {
-	Token t;
-	if (strlen(lexeme)>ERR_LEN)
-	{
-		memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
-		t.attribute.err_lex[ERR_LEN - 3] = '.';
-		t.attribute.err_lex[ERR_LEN - 2] = '.';
-		t.attribute.err_lex[ERR_LEN - 1] = '.';
-		t.attribute.err_lex[ERR_LEN] = '\0';
-	}
-	else
-	{
-		memcpy(t.attribute.err_lex, lexeme, ERR_LEN);
-	}
-	t.code = ERR_T;
-	return t;
+	return aa_table[ESWR](lexeme);
 }
 
 /* Purpose: Returns an error token with a truncated lexeme as the attribute; Retracts the buffer

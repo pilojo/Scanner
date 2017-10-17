@@ -27,6 +27,8 @@
 
 #define SEOF 255
 
+#define ESWR 13
+
 #define PLATY_INT_MAX SHRT_MAX
 
 /*  Single-lexeme tokens processed separately one by one
