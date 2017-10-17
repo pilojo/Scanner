@@ -31,6 +31,8 @@ aa_func13()
 * The define does not have any effect in Borland compiler projects.
 */
 #define _CRT_SECURE_NO_WARNINGS
+#define DEBUG  /* for conditional processing */
+
 
 #include <stdio.h>   /* standard input / output */
 #include <ctype.h>   /* conversion functions */
@@ -46,8 +48,7 @@ aa_func13()
 #include "token.h"
 #include "table.h"
 
-#define DEBUG  /* for conditional processing */
-#undef  DEBUG
+
 
 /* Global objects - variables */
 /* This buffer is used as a repository for string literals.
