@@ -32,7 +32,7 @@ aa_func13()
 */
 #define _CRT_SECURE_NO_WARNINGS
 #define DEBUG  /* for conditional processing */
-
+#undef DEBUG
 
 #include <stdio.h>   /* standard input / output */
 #include <ctype.h>   /* conversion functions */
@@ -199,6 +199,7 @@ Token malar_next_token(Buffer * sc_buf)
 					continue;
 				}
 				lines++;
+				break;
 			}
 			else {
 				t.code = ERR_T;
@@ -253,40 +254,42 @@ Token malar_next_token(Buffer * sc_buf)
 			return t;
 		default:
 			if (c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+				b_retract(sc_buf);
 				lexstart = b_mark(sc_buf, b_getcoffset(sc_buf) - 1);
+				lexend = lexstart;
+				state = 0;
 				while (accept == NOAS) {
-					state = get_next_state(state, c, &accept);
-					c = b_getc(sc_buf);
+					state = get_next_state(state, b_getc(sc_buf), &accept);
+					if (accept != NOAS) break;
 				}
 				if (accept == ASWR) b_retract(sc_buf);
 
 				lexend = b_getcoffset(sc_buf);
 
-				lex_buf = b_allocate(lexend - lexstart + 1, 15, 'f');
-				b_retract(sc_buf);
-				for (i = lexend - lexstart; i >= 0; i--) {
+				lex_buf = b_allocate(lexend - lexstart + 1, 10, 'a');
+				b_reset(sc_buf);
+				for (; lexstart < lexend; ++lexstart) {
 					b_addc(lex_buf, b_getc(sc_buf));
 				}
-				lexeme = (char*)malloc(lexend - lexstart);
-				strncpy(lexeme, sc_buf->cb_head + lexstart, lexend - lexstart);
+				b_addc(lex_buf, '\0');
 				if (aa_table[state] != NULL) {
-					t = aa_table[state](lexeme);
-					free(lexeme);
-					b_free(lex_buf);
+					t = aa_table[state](b_location(lex_buf, 0));
 				}
+
 				else {
 					scerrnum = -1;
 					t = aa_table[ES]("RUN TIME ERROR: ");
-					free(lexeme);
+
 					b_free(lex_buf);
 					return t;
 				}
-
+				free(lex_buf);
 				return t;
 			}
 			else {
 				t.code = ERR_T;
 				t.attribute.err_lex[0] = c;
+				return t;
 			}
 		}
 
@@ -382,14 +385,12 @@ Token aa_func02(char lexeme[])
 		}
 	}
 	else {
-		if (strlen(lexeme) > VID_LEN) {
-			char temp[VID_LEN];
-			strcpy(temp, lexeme);
-			strcpy(token.attribute.vid_lex, temp);
+		if (strlen(lexeme) > VID_LEN+1) {
+			strncpy(token.attribute.vid_lex, lexeme, VID_LEN);
 			token.attribute.vid_lex[VID_LEN + 1] = '\0';
 		}
 		else {
-			strcpy(token.attribute.vid_lex, lexeme);
+			strncpy(token.attribute.vid_lex, lexeme, strlen(lexeme));
 			token.attribute.vid_lex[strlen(lexeme)] = '\0';
 		}
 		token.code = AVID_T;
@@ -411,10 +412,8 @@ Token aa_func03(char lexeme[]) {
 
 	token.code = SVID_T;
 
-	if (strlen(lexeme) > VID_LEN - 1) {
-		char temp[VID_LEN - 1];
-		strcpy(temp, lexeme);
-		strcpy(token.attribute.vid_lex, temp);
+	if (strlen(lexeme) > VID_LEN ) {
+		strncpy(token.attribute.vid_lex, lexeme, VID_LEN-1);
 		token.attribute.vid_lex[VID_LEN] = '$';
 		token.attribute.vid_lex[VID_LEN + 1] = '\0';
 	}

@@ -110,6 +110,7 @@ typedef Token(*PTR_AAF)(char *lexeme);
 PTR_AAF aa_table[] = {
 	
 	NULL,
+	NULL,
 	aa_func02,
 	aa_func03,
 	NULL,
