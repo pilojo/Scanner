@@ -85,7 +85,7 @@ int scanner_init(Buffer * sc_buf) {
 }
 
 /* Purpose: To retrieve the next token stored in the buffer
-** Author: John Pilon
+** Author: John Pilon, Daniel Brenot
 ** Version: 1.0
 ** Called functions: b_getc()
 ** Parameters: sc_buf : a valid pointer to an initialised buffer
