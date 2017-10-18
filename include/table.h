@@ -27,7 +27,7 @@
 
 #define SEOF 255
 
-#define ESWR 13
+
 
 #define PLATY_INT_MAX SHRT_MAX
 #define PLATY_INT_MIN SHRT_MIN
@@ -41,6 +41,7 @@
 */
 
 #define ES  12 /* Error state */
+#define ESWR 13
 #define IS -1    /* Inavalid state */
 
 /* State transition table definition */
@@ -57,7 +58,7 @@ int  st_table[][TABLE_COLUMNS] = {
 	/* State 6  */	{ ES, 5, 9, ES, ES, 7, ES, 5 },
 	/* State 7  */	{ ES, 7, ES, ES, 7, ES, 8, 8 },
 	/* State 8  */	{ IS, IS, IS, IS, IS, IS, IS, IS },
-	/* State 9  */	{ ES, ES, ES, 11, 11, ES, ES, 10},
+	/* State 9  */	{ ES, ES, ES, 11, 11, ES, ES, ESWR},
 	/* State 10 */	{ IS, IS, IS, IS, IS, IS, IS, IS },
 	/* State 11 */	{ ES, 11, ES, 11, 11, ES, ES, 10 },
 	/* State 12 */	{ IS, IS, IS, IS, IS, IS, IS, IS },
