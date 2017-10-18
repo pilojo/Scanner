@@ -30,6 +30,7 @@
 #define ESWR 13
 
 #define PLATY_INT_MAX SHRT_MAX
+#define PLATY_INT_MIN SHRT_MIN
 
 /*  Single-lexeme tokens processed separately one by one
 *  in the token-driven part of the scanner
@@ -47,14 +48,14 @@
 #define TABLE_COLUMNS 8
 /*transition table - type of states defined in separate table */
 int  st_table[][TABLE_COLUMNS] = {
-	/* State 0  */  { 1, 6, ES, ES, 4, ES, ES, ES },
-	/* State 1  */  { 1, 1, ES, ES, 1, 2, 3, 2 },
+	/* State 0  */  { 1, 6, ES, 1, 4, ES, ES, ES },
+	/* State 1  */  { 1, 1, ES, 1, 1, 2, 3, 2 },
 	/* State 2  */	{ IS, IS, IS, IS, IS, IS, IS, IS},
 	/* State 3  */	{ IS, IS, IS, IS, IS, IS, IS, IS },
-	/* State 4  */	{ 5, 4, ES, ES, 4, 7, 5, 5 },
+	/* State 4  */	{ ES, 4, ES, ES, 4, 7, 5, 5 },
 	/* State 5  */	{ IS, IS, IS, IS, IS, IS, IS, IS },
-	/* State 6  */	{ ES, 9, 9, ES, ES, 7, ES, 5 },
-	/* State 7  */	{ 8, 7, ES, ES, 7, 8, 8, 8 },
+	/* State 6  */	{ ES, 5, 9, ES, ES, 7, ES, 5 },
+	/* State 7  */	{ ES, 7, ES, ES, 7, ES, 8, 8 },
 	/* State 8  */	{ IS, IS, IS, IS, IS, IS, IS, IS },
 	/* State 9  */	{ ES, ES, ES, 11, 11, ES, ES, 10},
 	/* State 10 */	{ IS, IS, IS, IS, IS, IS, IS, IS },

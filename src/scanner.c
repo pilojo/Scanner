@@ -171,8 +171,16 @@ Token malar_next_token(Buffer * sc_buf)
 			t.attribute.rel_op = GT;
 			return t;
 		case '<':
-			t.code = REL_OP_T;
-			t.attribute.rel_op = LT;
+			c = b_getc(sc_buf);
+			if (c == '>') {
+				t.code = LOG_OP_T;
+				t.attribute.log_op = NE;
+			}
+			else {
+				b_retract(sc_buf);
+				t.code = REL_OP_T;
+				t.attribute.rel_op = LT;
+			}
 			return t;
 		case '=':
 			c = b_getc(sc_buf);
@@ -180,46 +188,45 @@ Token malar_next_token(Buffer * sc_buf)
 				t.code = REL_OP_T;
 				t.attribute.rel_op = EQ;
 			}
-			else if (c == ' ') {
-				t.code = ASS_OP_T;
-			}
 			else {
-				t.code = ERR_T;
-				strcpy(t.attribute.err_lex, "=" + c);
+				b_retract(sc_buf);
+				t.code = ASS_OP_T;
 			}
 			return t;
 		case '!':
 			c = b_getc(sc_buf);
-			if (c == '=') {
-				t.code = REL_OP_T;
-				t.attribute.rel_op = NE;
-			}
-			else if (c == '!') {
+			if (c != '!') {
+				t.code = ERR_T;
+				t.attribute.err_lex[0] = '!';
+				t.attribute.err_lex[1] = c;
+				t.attribute.err_lex[2] = '\0';
 				while (c = b_getc(sc_buf) != '\n') { /* Warning C4706 acknowledgement */
 					continue;
 				}
-				lines++;
-				break;
+				
+				return t;
 			}
-			else {
-				t.code = ERR_T;
-				strcpy(t.attribute.err_lex, "!"+c);
+			while (c = b_getc(sc_buf) != '\n') { /* Warning C4706 acknowledgement */
+				continue;
 			}
-			return t; /* Warning C4701 acknowledgement: t will always be used */
+			lines++;
+			break;
+			
 		case '.':
-			b_mark(sc_buf, b_getcoffset(sc_buf));
+			c = b_getc(sc_buf);
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
 				t.attribute.log_op = AND;
-				return t;
 			}
 			else if (c == 'O' && b_getc(sc_buf) == 'R' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
 				t.attribute.log_op = OR;
 			}
-			t.code = ERR_T;
-			t.attribute.err_lex[0] = c;
-			b_retract(sc_buf);
+			else {
+				t.code = ERR_T;
+				t.attribute.err_lex[0] = '.';
+				t.attribute.err_lex[1] = '\0';
+			}
 			return t;
 		case '#':
 			t.code = SCC_OP_T;
@@ -231,20 +238,18 @@ Token malar_next_token(Buffer * sc_buf)
 			lexstart = b_mark(sc_buf, b_getcoffset(sc_buf) - 1);
 			b_mark(str_LTBL, b_getcoffset(str_LTBL));
 			while ((c = b_getc(sc_buf)) != '\"' && !b_eob(sc_buf));
-			lexend = b_getcoffset(sc_buf) - 1;
-			if (b_eob) {
+			lexend = b_getcoffset(sc_buf);
+			if (b_eob(sc_buf)) {
 				t.code = ERR_T;
-				lexeme = (char*)malloc(17);
-				lexeme = b_location(sc_buf, (short)(lexstart));
-				strcpy(t.attribute.err_lex, lexeme);
+				strncpy(t.attribute.err_lex, b_location(sc_buf, (short)lexstart), 17);
 				for (i = 17; i < 20; i++) {
 					t.attribute.err_lex[i] = '.';
 				}
 			}
 			else {
 				t.attribute.str_offset = b_limit(str_LTBL);
-				b_retract(sc_buf);
-				for (i = t.attribute.str_offset; i < lexend - lexstart; i++) {
+				b_reset(sc_buf);
+				for (i = 0; i < lexend - lexstart; i++) {
 					b_addc(str_LTBL, b_getc(sc_buf));
 				}
 				b_addc(str_LTBL, '\0');
@@ -252,10 +257,16 @@ Token malar_next_token(Buffer * sc_buf)
 			}
 
 			return t;
+		case '$':
+			t.code = ERR_T;
+			t.attribute.err_lex[0] = '$';
+			t.attribute.err_lex[1] = '\0';
+			return t;
 		default:
 			if (c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+
 				b_retract(sc_buf);
-				lexstart = b_mark(sc_buf, b_getcoffset(sc_buf) - 1);
+				lexstart = b_mark(sc_buf, b_getcoffset(sc_buf));
 				lexend = lexstart;
 				state = 0;
 				while (accept == NOAS) {
@@ -269,26 +280,26 @@ Token malar_next_token(Buffer * sc_buf)
 				lex_buf = b_allocate(lexend - lexstart + 1, 10, 'a');
 				b_reset(sc_buf);
 				for (; lexstart < lexend; ++lexstart) {
-					b_addc(lex_buf, b_getc(sc_buf));
+					c = b_getc(sc_buf);
+					if(c != '\n')	b_addc(lex_buf, c);
 				}
 				b_addc(lex_buf, '\0');
 				if (aa_table[state] != NULL) {
 					t = aa_table[state](b_location(lex_buf, 0));
+					free(lex_buf);
 				}
 
 				else {
 					scerrnum = -1;
 					t = aa_table[ES]("RUN TIME ERROR: ");
-
-					b_free(lex_buf);
 					return t;
 				}
-				free(lex_buf);
 				return t;
 			}
 			else {
 				t.code = ERR_T;
 				t.attribute.err_lex[0] = c;
+				t.attribute.err_lex[1] = '\0';
 				return t;
 			}
 		}
@@ -387,7 +398,7 @@ Token aa_func02(char lexeme[])
 	else {
 		if (strlen(lexeme) > VID_LEN+1) {
 			strncpy(token.attribute.vid_lex, lexeme, VID_LEN);
-			token.attribute.vid_lex[VID_LEN + 1] = '\0';
+			token.attribute.vid_lex[VID_LEN ] = '\0';
 		}
 		else {
 			strncpy(token.attribute.vid_lex, lexeme, strlen(lexeme));
@@ -409,16 +420,19 @@ Token aa_func02(char lexeme[])
 */
 Token aa_func03(char lexeme[]) {
 	Token token;
+	int i;
 
 	token.code = SVID_T;
 
-	if (strlen(lexeme) > VID_LEN ) {
-		strncpy(token.attribute.vid_lex, lexeme, VID_LEN-1);
-		token.attribute.vid_lex[VID_LEN] = '$';
-		token.attribute.vid_lex[VID_LEN + 1] = '\0';
+	if (strlen(lexeme) > VID_LEN) {
+		strncpy(token.attribute.vid_lex, lexeme, VID_LEN - 1);
+		token.attribute.vid_lex[VID_LEN - 1] = '$';
+		token.attribute.vid_lex[VID_LEN] = '\0';
 	}
 	else {
-		strcpy(token.attribute.vid_lex, lexeme);
+		for (i = 0; i < strlen(lexeme); i++) {
+			token.attribute.vid_lex[i] = lexeme[i];
+		}
 		token.attribute.vid_lex[strlen(lexeme)] = '\0';
 	}
 
@@ -436,29 +450,24 @@ Token aa_func03(char lexeme[]) {
 */
 Token aa_func05(char lexeme[]) {
 	Token t;
-	char decimal =(char)(strchr(lexeme, '.') - lexeme);
 	char i, base;
-	float flt = 0;
-	for (i = (char)strlen(lexeme) - 1, base = decimal - (i); i >= 0; i--)
+	long dec = 0;
+	for (i = (char)strlen(lexeme) - 1, base = 0; i >= 0; i--, base++)
 	{
-		if (lexeme[i] == '.') { continue; }
-		else
+		dec += ((short)pow(10, base))*((short)(lexeme[i] - '0'));
+		if (dec < PLATY_INT_MIN || dec > PLATY_INT_MAX)
 		{
-			flt += ((float)(pow(10, base)*(lexeme[i] - '0')));
-			if (flt < 0)
-			{
-				memcpy(t.attribute.err_lex, &lexeme, ERR_LEN - 3);
-				t.attribute.err_lex[ERR_LEN - 3] = '.';
-				t.attribute.err_lex[ERR_LEN - 2] = '.';
-				t.attribute.err_lex[ERR_LEN - 1] = '.';
-				t.attribute.err_lex[ERR_LEN] = '\0';
-				t.code = ERR_T;
-				return t;
-			}
-			base++;
+			memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
+			t.attribute.err_lex[ERR_LEN - 3] = '.';
+			t.attribute.err_lex[ERR_LEN - 2] = '.';
+			t.attribute.err_lex[ERR_LEN - 1] = '.';
+			t.attribute.err_lex[ERR_LEN] = '\0';
+			t.code = ERR_T;
+			return t;
 		}
 	}
-	t.attribute.flt_value = flt;
+	t.code = INL_T;
+	t.attribute.int_value = dec;
 	return t;
 }
 
@@ -473,23 +482,39 @@ Token aa_func05(char lexeme[]) {
 Token aa_func08(char lexeme[])
 {
 	Token t;
+	char decimal = (char)(strchr(lexeme, '.') - lexeme);
 	char i, base;
-	long dec = 0;
-	for (i = (char)strlen(lexeme) - 1, base = 0; i >= 0; i--, base++)
-	{
-		dec += ((short)pow(10, base))*((short)(lexeme[i] - '0'));
-		if (dec < 0)
-		{
-			memcpy(t.attribute.err_lex, &lexeme, ERR_LEN - 3);
-			t.attribute.err_lex[ERR_LEN - 3] = '.';
-			t.attribute.err_lex[ERR_LEN - 2] = '.';
-			t.attribute.err_lex[ERR_LEN - 1] = '.';
-			t.attribute.err_lex[ERR_LEN] = '\0';
-			t.code = ERR_T;
-			return t;
+	char pass = 0;
+	float flt = 0;
+	if (strlen(lexeme) > 9) {
+		for (i = 9; i > 1; i--) {
+			if (lexeme[i] != '0') {
+				pass = 1;
+				break;
+			}
 		}
 	}
-	t.attribute.int_value = dec;
+	for (i = (char)strlen(lexeme) - 1, base = decimal - (i); i >= 0; i--)
+	{
+		if (lexeme[i] == '.') { continue; }
+		else
+		{
+			flt += ((float)(pow(10, base)*(lexeme[i] - '0')));
+			if (flt == INFINITY || flt == NAN || flt < PLATY_INT_MIN || flt > PLATY_INT_MAX || !pass)
+			{
+				memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
+				t.attribute.err_lex[ERR_LEN - 3] = '.';
+				t.attribute.err_lex[ERR_LEN - 2] = '.';
+				t.attribute.err_lex[ERR_LEN - 1] = '.';
+				t.attribute.err_lex[ERR_LEN] = '\0';
+				t.code = ERR_T;
+				return t;
+			}
+			base++;
+		}
+	}
+	t.code = FPL_T;
+	t.attribute.flt_value = flt;
 	return t;
 }
 
@@ -505,15 +530,17 @@ Token aa_func10(char lexeme[])
 {
 	Token t;
 	t.attribute.int_value = atolh(lexeme);
-	if (t.attribute.int_value < 0)
+	t.code = INL_T;
+	if (t.attribute.int_value < PLATY_INT_MIN || t.attribute.int_value > PLATY_INT_MAX)
 	{
-		memcpy(t.attribute.err_lex, &lexeme, ERR_LEN - 3);
+		memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
 		t.attribute.err_lex[ERR_LEN - 3] = '.';
 		t.attribute.err_lex[ERR_LEN - 2] = '.';
 		t.attribute.err_lex[ERR_LEN - 1] = '.';
 		t.attribute.err_lex[ERR_LEN] = '\0';
 		t.code = ERR_T;
 	}
+
 	return t;
 }
 
@@ -551,7 +578,8 @@ Token aa_func13(char lexeme[])
 	}
 	else
 	{
-		memcpy(t.attribute.err_lex, lexeme, ERR_LEN);
+		strncpy(t.attribute.err_lex, lexeme, strlen(lexeme));
+		t.attribute.err_lex[strlen(lexeme)] = '\0';
 	}
 	t.code = ERR_T;
 	return t;
@@ -569,7 +597,7 @@ long atolh(char * lexeme) {
 	unsigned char i, base;  /* counters for base exponent and lexeme index */
 	long hex = 0; /* integer conversion of hex value */
 				  /* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
-	for (i = (char)strlen(lexeme), base = 0; i > 1 && hex >= 0; i--, base++) {
+	for (i = (char)strlen(lexeme)-1, base = 0; i >= 0 && hex >= 0; i--, base++) {
 		/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
 		hex += (short)pow(16, base)*(lexeme[i] <= '9' ? (short)(lexeme[i] - '0') : (short)(lexeme[i] - 'A' + 10));
 	}
