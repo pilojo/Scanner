@@ -356,12 +356,13 @@ int get_next_state(int state, char c, int *accept)
 */
 int char_class(char c)
 {
-	if (c=='x')
-	{return 2;}
-	else if ((c >= 'a'&&c <= 'z') || (c >= 'G' && c <= 'Z'))
+	
+	if ((c >= 'a'&&c <= 'z') && c != 'x' || (c >= 'G' && c <= 'Z'))
 	{return 0;}
 	else if (c == '0')
 	{return 1;}
+	else if (c == 'x')
+	{return 2;}
 	else if (c >='A' && c <='F')
 	{return 3;}
 	else if (c >= '1'&&c <= '9')
