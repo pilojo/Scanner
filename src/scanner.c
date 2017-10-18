@@ -223,6 +223,7 @@ Token malar_next_token(Buffer * sc_buf)
 				t.attribute.log_op = OR;
 			}
 			else {
+				b_retract(sc_buf);
 				t.code = ERR_T;
 				t.attribute.err_lex[0] = '.';
 				t.attribute.err_lex[1] = '\0';
@@ -235,10 +236,10 @@ Token malar_next_token(Buffer * sc_buf)
 			lines++;
 			break;
 		case '\"':
-			lexstart = b_mark(sc_buf, b_getcoffset(sc_buf) - 1);
+			lexstart = b_mark(sc_buf, b_getcoffset(sc_buf));
 			b_mark(str_LTBL, b_getcoffset(str_LTBL));
 			while ((c = b_getc(sc_buf)) != '\"' && !b_eob(sc_buf));
-			lexend = b_getcoffset(sc_buf);
+			lexend = b_getcoffset(sc_buf) - 1;
 			if (b_eob(sc_buf)) {
 				t.code = ERR_T;
 				strncpy(t.attribute.err_lex, b_location(sc_buf, (short)lexstart), 17);
@@ -255,7 +256,7 @@ Token malar_next_token(Buffer * sc_buf)
 				b_addc(str_LTBL, '\0');
 				t.code = STR_T;
 			}
-
+			b_getc(sc_buf);
 			return t;
 		case '$':
 			t.code = ERR_T;
