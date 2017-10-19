@@ -66,7 +66,7 @@ int main(int argc, char ** argv) {
 	printf("String normal length:\t\t%s\n", (aa_func02("aaaaaaaa$").attribute.vid_lex));
 	
 	printf("\n\naa_func05()\n");
-	printf("Int test:\t\t%d\n",aa_func05("99"));
-	printf("long test:\t\t%d\n", aa_func05("99999999999999999999999999999999999999999999"));
+	printf("Int test:\t\t%f\n",aa_func05("99.9").attribute.flt_value);
+	printf("long test:\t\t%f\n", aa_func05("999999999999999999999999999999999999999.9").attribute.flt_value);
 	scanf("%c", &c);
 }
