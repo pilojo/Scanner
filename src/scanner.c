@@ -488,21 +488,14 @@ Token aa_func08(char lexeme[])
 	char i, base;
 	char pass = 0;
 	float flt = 0;
-	if (strlen(lexeme) > 9) {
-		for (i = 9; i > 1; i--) {
-			if (lexeme[i] != '0') {
-				pass = 1;
-				break;
-			}
-		}
-	}
+
 	for (i = (char)strlen(lexeme) - 1, base = decimal - (i); i >= 0; i--)
 	{
 		if (lexeme[i] == '.') { continue; }
 		else
 		{
 			flt += ((float)(pow(10, base)*(lexeme[i] - '0')));
-			if (flt == INFINITY || flt == NAN || flt < PLATY_INT_MIN || flt > PLATY_INT_MAX || !pass)
+			if (flt == INFINITY || flt == NAN || flt < PLATY_INT_MIN || flt > PLATY_INT_MAX)
 			{
 				memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
 				t.attribute.err_lex[ERR_LEN - 3] = '.';
