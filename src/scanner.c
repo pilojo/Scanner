@@ -454,29 +454,24 @@ Token aa_func03(char lexeme[]) {
 */
 Token aa_func05(char lexeme[]) {
 	Token t;
-	char decimal = (char)(strchr(lexeme, '.') - lexeme);
 	char i, base;
-	float flt = 0;
-	for (i = (char)strlen(lexeme) - 1, base = decimal - (i); i >= 0; i--)
+	long dec = 0;
+	for (i = (char)strlen(lexeme) - 1, base = 0; i >= 0; i--, base++)
 	{
-		if (lexeme[i] == '.') { continue; }
-		else
+		dec += ((short)pow(10, base))*((short)(lexeme[i] - '0'));
+		if (dec < PLATY_INT_MIN || dec > PLATY_INT_MAX)
 		{
-			flt += ((float)(pow(10, base)*(lexeme[i] - '0')));
-			if (flt < 0)
-			{
-				memcpy(t.attribute.err_lex, &lexeme, ERR_LEN - 3);
-				t.attribute.err_lex[ERR_LEN - 3] = '.';
-				t.attribute.err_lex[ERR_LEN - 2] = '.';
-				t.attribute.err_lex[ERR_LEN - 1] = '.';
-				t.attribute.err_lex[ERR_LEN] = '\0';
-				t.code = ERR_T;
-				return t;
-			}
-			base++;
+			memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
+			t.attribute.err_lex[ERR_LEN - 3] = '.';
+			t.attribute.err_lex[ERR_LEN - 2] = '.';
+			t.attribute.err_lex[ERR_LEN - 1] = '.';
+			t.attribute.err_lex[ERR_LEN] = '\0';
+			t.code = ERR_T;
+			return t;
 		}
 	}
-	t.attribute.flt_value = flt;
+	t.code = INL_T;
+	t.attribute.int_value = dec;
 	return t;
 }
 
