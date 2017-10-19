@@ -173,7 +173,7 @@ Token malar_next_token(Buffer * sc_buf)
 		case '<':
 			c = b_getc(sc_buf);
 			if (c == '>') {
-				t.code = LOG_OP_T;
+				t.code = REL_OP_T;
 				t.attribute.log_op = NE;
 			}
 			else {
@@ -213,6 +213,7 @@ Token malar_next_token(Buffer * sc_buf)
 			break;
 			
 		case '.':
+			b_mark(sc_buf, b_getcoffset(sc_buf));
 			c = b_getc(sc_buf);
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
@@ -223,7 +224,7 @@ Token malar_next_token(Buffer * sc_buf)
 				t.attribute.log_op = OR;
 			}
 			else {
-				b_retract(sc_buf);
+				b_reset(sc_buf);
 				t.code = ERR_T;
 				t.attribute.err_lex[0] = '.';
 				t.attribute.err_lex[1] = '\0';
@@ -242,10 +243,11 @@ Token malar_next_token(Buffer * sc_buf)
 			lexend = b_getcoffset(sc_buf) - 1;
 			if (b_eob(sc_buf)) {
 				t.code = ERR_T;
-				strncpy(t.attribute.err_lex, b_location(sc_buf, (short)lexstart), 17);
+				strncpy(t.attribute.err_lex, b_location(sc_buf, (short)lexstart)-1, 17);
 				for (i = 17; i < 20; i++) {
 					t.attribute.err_lex[i] = '.';
 				}
+				t.attribute.err_lex[ERR_LEN] = '\0';
 			}
 			else {
 				t.attribute.str_offset = b_limit(str_LTBL);
@@ -589,12 +591,12 @@ Token aa_func13(char lexeme[])
 ** Algorithm:
 */
 long atolh(char * lexeme) {
-	unsigned char i, base;  /* counters for base exponent and lexeme index */
+	char i, base;  /* counters for base exponent and lexeme index */
 	long hex = 0; /* integer conversion of hex value */
 				  /* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
-	for (i = (char)strlen(lexeme)-1, base = 0; i >= 0 && hex >= 0; i--, base++) {
+	for (i = (char)strlen(lexeme)-1, base = 0; i > 1 && hex >= 0; i--, base++) {
 		/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
-		hex += (short)pow(16, base)*(lexeme[i] <= '9' ? (short)(lexeme[i] - '0') : (short)(lexeme[i] - 'A' + 10));
+		hex += pow(16, base)*(lexeme[i] <= '9' ? (short)(lexeme[i] - '0') : (short)(lexeme[i] - 'A' + 10));
 	}
 	return hex;
 }
