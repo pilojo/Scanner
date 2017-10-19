@@ -498,7 +498,7 @@ Token aa_func08(char lexeme[])
 		else
 		{
 			flt += ((float)(pow(10, base)*(lexeme[i] - '0')));
-			if (lexeme != '0') { change = 1; }
+			if (lexeme[i] != '0') { change = 1; }
 			if (flt == INFINITY || flt == NAN || flt < PLATY_INT_MIN || flt > PLATY_INT_MAX ||(i==0 && change==1 && flt==0.0))
 			{
 				memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
