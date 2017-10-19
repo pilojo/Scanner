@@ -106,7 +106,6 @@ Token malar_next_token(Buffer * sc_buf)
 
 					   /*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
 	int lines = 0;
-	char * lexeme;
 	int i;
 
 	if (sc_buf == NULL) {
@@ -200,13 +199,13 @@ Token malar_next_token(Buffer * sc_buf)
 				t.attribute.err_lex[0] = '!';
 				t.attribute.err_lex[1] = c;
 				t.attribute.err_lex[2] = '\0';
-				while (c = b_getc(sc_buf) != '\n') { /* Warning C4706 acknowledgement */
+				while ((c = b_getc(sc_buf)) != '\n') { 
 					continue;
 				}
 				
 				return t;
 			}
-			while (c = b_getc(sc_buf) != '\n') { /* Warning C4706 acknowledgement */
+			while ((c = b_getc(sc_buf)) != '\n') { 
 				continue;
 			}
 			lines++;
@@ -243,8 +242,8 @@ Token malar_next_token(Buffer * sc_buf)
 			lexend = b_getcoffset(sc_buf) - 1;
 			if (b_eob(sc_buf)) {
 				t.code = ERR_T;
-				strncpy(t.attribute.err_lex, b_location(sc_buf, (short)lexstart)-1, 17);
-				for (i = 17; i < 20; i++) {
+				strncpy(t.attribute.err_lex, b_location(sc_buf, (short)lexstart)-1, ERR_LEN-3);
+				for (i = ERR_LEN-3; i < ERR_LEN; i++) {
 					t.attribute.err_lex[i] = '.';
 				}
 				t.attribute.err_lex[ERR_LEN] = '\0';
@@ -280,20 +279,26 @@ Token malar_next_token(Buffer * sc_buf)
 
 				lexend = b_getcoffset(sc_buf);
 
-				lex_buf = b_allocate(lexend - lexstart + 1, 10, 'a');
-				b_reset(sc_buf);
-				for (; lexstart < lexend; ++lexstart) {
-					c = b_getc(sc_buf);
-					if(c != '\n')	b_addc(lex_buf, c);
-				}
-				b_addc(lex_buf, '\0');
-				if (aa_table[state] != NULL) {
-					t = aa_table[state](b_location(lex_buf, 0));
-					free(lex_buf);
+				if ((lex_buf = b_allocate(lexend - lexstart + 1, 0, 'f'))) { /* Warning C4706 acknowledgement */
+					b_reset(sc_buf);
+					for (; lexstart < lexend; ++lexstart) {
+						c = b_getc(sc_buf);
+						if (c != '\n')	b_addc(lex_buf, c);
+					}
+					b_addc(lex_buf, '\0');
+					if (aa_table[state] != NULL) {
+						t = aa_table[state](b_location(lex_buf, BUFFER_START));
+						free(lex_buf);
+					}
+					else {
+						scerrnum = RUNTIME_ERROR;
+						t = aa_table[ES]("RUN TIME ERROR: ");
+						return t;
+					}
 				}
 
 				else {
-					scerrnum = -1;
+					scerrnum = RUNTIME_ERROR;
 					t = aa_table[ES]("RUN TIME ERROR: ");
 					return t;
 				}
@@ -388,16 +393,9 @@ int char_class(char c)
 Token aa_func02(char lexeme[])
 {
 	Token token;
-	int i;
 
-	if (iskeyword(lexeme)) {
-		for (i = 0; i < KWT_SIZE; i++) {
-			if (strcmp(lexeme, kw_table[i]) == 0) {
-				token.attribute.kwt_idx = i;
-				token.code = KW_T;
-				break;
-			}
-		}
+	if ((token.attribute.kwt_idx = iskeyword(lexeme)) != -1) { 
+		token.code = KW_T;
 	}
 	else {
 		if (strlen(lexeme) > VID_LEN+1) {
@@ -411,7 +409,7 @@ Token aa_func02(char lexeme[])
 		token.code = AVID_T;
 	}
 
-	return token; /* Warning C4701 acknowledgement: token will always be used */
+	return token; 
 }
 
 /* Purpose: Sets the token as a string token and ensures it does not exceed max string size
@@ -458,7 +456,7 @@ Token aa_func05(char lexeme[]) {
 	long dec = 0;
 	for (i = (char)strlen(lexeme) - 1, base = 0; i >= 0; i--, base++)
 	{
-		dec += ((short)pow(10, base))*((short)(lexeme[i] - '0'));
+		dec += ((short)pow(DECIMAL, base))*((short)(lexeme[i] - '0'));
 		if (dec < PLATY_INT_MIN || dec > PLATY_INT_MAX)
 		{
 			memcpy(t.attribute.err_lex, lexeme, ERR_LEN - 3);
@@ -488,7 +486,6 @@ Token aa_func08(char lexeme[])
 	Token t;
 	char decimal = (char)(strchr(lexeme, '.') - lexeme);
 	char i, base;
-	char pass = 0;
 	float flt = 0;
 	char change = 0;
 
@@ -497,7 +494,7 @@ Token aa_func08(char lexeme[])
 		if (lexeme[i] == '.') { continue; }
 		else
 		{
-			flt += ((float)(pow(10, base)*(lexeme[i] - '0')));
+			flt += ((float)(pow(DECIMAL, base)*(lexeme[i] - '0')));
 			if (lexeme[i] != '0') { change = 1; }
 			if (flt == INFINITY || flt == NAN || flt < PLATY_INT_MIN || flt > PLATY_INT_MAX ||(i==0 && change==1 && flt==0.0))
 			{
@@ -598,7 +595,7 @@ long atolh(char * lexeme) {
 				  /* Determines integer value of ASCII represented hex value. A,B,C,D,E,F are defined in an enum in table.h */
 	for (i = (char)strlen(lexeme)-1, base = 0; i > 1 && hex >= 0; i--, base++) {
 		/* conversion between ASCII chars and hex integer values. one-time literals are used to complete this calculation */
-		hex += pow(16, base)*(lexeme[i] <= '9' ? (short)(lexeme[i] - '0') : (short)(lexeme[i] - 'A' + 10));
+		hex += (long)pow(HEX, base)*(lexeme[i] <= '9' ? (short)(lexeme[i] - '0') : (short)(lexeme[i] - 'A' + HEX_OFFSET));
 	}
 	return hex;
 }
@@ -614,7 +611,7 @@ long atolh(char * lexeme) {
 int iskeyword(char * kw_lexeme) {
 	int i;
 	for (i = 0; i < KWT_SIZE; i++) {
-		if (strcmp(kw_lexeme, kw_table[i]) == 0) return 1;
+		if (strcmp(kw_lexeme, kw_table[i]) == 0) return i;
 	}
-	return 0;
+	return -1;
 }

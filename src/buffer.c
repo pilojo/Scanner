@@ -191,8 +191,9 @@ void b_free(Buffer *const pBD) {
 		cb_head = pBD->cb_head;
 		free(cb_head);
 		free(pBD);
+		pBD->cb_head = NULL;/* Free dangling pointer */
 	}
-	pBD->cb_head = NULL; /* Free dangling pointer */
+	 
 }
 
 /* Purpose: Checks if the buffer is full

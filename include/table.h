@@ -41,8 +41,12 @@
 */
 
 #define ES  12 /* Error state */
-#define ESWR 13
+#define ESWR 13 /* Error with retract */
 #define IS -1    /* Inavalid state */
+#define RUNTIME_ERROR -5
+#define DECIMAL 10
+#define HEX 16
+#define HEX_OFFSET 10
 
 /* State transition table definition */
 
