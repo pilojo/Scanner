@@ -127,7 +127,7 @@ PTR_AAF aa_table[] = {
 	NULL,
 	aa_func10,
 	NULL,
-	aa_func12,
+	aa_func13,/*identical functon*/
 	aa_func13
 
 };

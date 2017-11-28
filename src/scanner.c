@@ -68,17 +68,19 @@ static int get_next_state(int, char, int *); /* state machine function */
 static int iskeyword(char * kw_lexeme); /*keywords lookup functuion */
 static long atolh(char * lexeme); /* converts hexadecimal string to decimal value */
 
-								  /* Purpose: Initialises a scanner that searches a buffer
-								  ** Author: John Pilon
-								  ** Version: 1.0
-								  ** Called functions: malloc(), calloc(), free()
-								  ** Parameters: sc_buf: a valid pointer to an initialised buffer
-								  ** Return Value: EXIT_SUCCESS if the scanner was initialised properly;EXIT_FAILURE otherwise
-								  ** Algorithm: Resets the buffer and prepares it to be read by the scanner
-								  */
+
+
+/* Purpose: Initialises a scanner that searches a buffer
+** Author: John Pilon
+** Version: 1.0
+** Called functions: malloc(), calloc(), free()
+** Parameters: sc_buf: a valid pointer to an initialised buffer
+** Return Value: EXIT_SUCCESS if the scanner was initialised properly;EXIT_FAILURE otherwise
+** Algorithm: Resets the buffer and prepares it to be read by the scanner
+*/
 int scanner_init(Buffer * sc_buf) {
 	if (b_isempty(sc_buf)) return EXIT_FAILURE;/*1*/
-											   /* in case the buffer has been read previously  */
+	/* in case the buffer has been read previously  */
 	b_rewind(sc_buf);
 	b_clear(str_LTBL);
 	line = 1;
@@ -103,8 +105,6 @@ Token malar_next_token(Buffer * sc_buf)
 	int accept = NOAS; /* type of state - initially not accepting */
 
 
-
-					   /*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
 	int lines = 0;
 	int i;
 
@@ -312,15 +312,6 @@ Token malar_next_token(Buffer * sc_buf)
 			}
 		}
 
-		/*CHECK OTHER CHARS HERE if NEEDED, SET A TOKEN AND RETURN IT.
-		FOR ILLEGAL CHARACTERS SET ERROR TOKEN.
-		THE ILLEGAL CHAR IS THE ATTRIBUTE OF THE ERROR TOKEN
-		IN A CASE OF RUNTIME ERROR, THE FUNCTION MUST STORE
-		A NON-NEGATIVE NUMBER INTO THE GLOBAL VARIABLE scerrnum
-		AND RETURN AN ERROR TOKEN. THE ERROR TOKEN ATTRIBUTE MUST
-		BE THE STRING "RUN TIME ERROR: "
-		}*/
-
 	}
 }
 
@@ -353,13 +344,13 @@ int get_next_state(int state, char c, int *accept)
 	return next;
 }
 
-/* Purpose:
+/* Purpose: To get the column in the transition table that the given character belons to
 ** Author: Daniel Brenot
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
+** Called functions: None
+** Parameters: c: A character to be tested against the transition table
+** Return Value: The column number of the transition table the character belongs to
+** Algorithm: Gets the column the character belongs in
 */
 int char_class(char c)
 {
@@ -385,10 +376,10 @@ int char_class(char c)
 /* Purpose: Checks if the lexeme is a keyword and sets the token accordingly
 ** Author: John Pilon
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
+** Called functions:iskeyword()
+** Parameters: lexeme: A valid character array containing the lexeme
+** Return Value: A valid token with the attributes set accordingly
+** Algorithm: Checks if the lexeme is a keyword; If its not, sets it as a VID and ensures the length of the string gets truncated if its too long
 */
 Token aa_func02(char lexeme[])
 {
@@ -415,10 +406,10 @@ Token aa_func02(char lexeme[])
 /* Purpose: Sets the token as a string token and ensures it does not exceed max string size
 ** Author: John Pilon
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
+** Called functions:strncpy() , strlen()
+** Parameters: lexeme: A valid character array containing the lexeme
+** Return Value: A valid token with the attributes set accordingly
+** Algorithm:Checks if the length of the lexeme exceeds the maximum length of a string. If it does, shortens the string before setting the token
 */
 Token aa_func03(char lexeme[]) {
 	Token token;
@@ -442,13 +433,13 @@ Token aa_func03(char lexeme[]) {
 
 }
 
-/* Purpose:  Converts a decimal lexeme to a floating point value token
+/* Purpose:  Converts a lexeme to a decimal value token
 ** Author: Daniel Brenot
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
+** Called functions: strlen() , pow()
+** Parameters: lexeme: A valid character array containing the lexeme
+** Return Value: A valid token with the attributes set accordingly
+** Algorithm: Converts each character to its corresponding decimal value and adds it to the value of the token. 
 */
 Token aa_func05(char lexeme[]) {
 	Token t;
@@ -473,13 +464,13 @@ Token aa_func05(char lexeme[]) {
 	return t;
 }
 
-/* Purpose: Converts a decimal into an integer token
-** Author: Svillen Ranev
+/* Purpose: Converts a lexeme into a floating point token
+** Author: Daniel Brenot
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
+** Called functions: strchr() , strlen()
+** Parameters: lexeme: A valid character array containing the lexeme
+** Return Value: A Token representing the floating point value of the lexeme
+** Algorithm: Converts the lexeme to floating point by parsing through the string for valid characters
 */
 Token aa_func08(char lexeme[])
 {
@@ -517,10 +508,10 @@ Token aa_func08(char lexeme[])
 /* Purpose: Converts a hexidecimal integer literal lexeme to a integer token
 ** Author: Daniel Brenot
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
+** Called functions: atolh() , memcpy()
+** Parameters: lexeme: A valid character array containing the lexeme
+** Return Value: A Token containing the integeR value of the hexadecimal
+** Algorithm: Calls the atolh function to retrieve the value. if the value is too large, the token is set as an error
 */
 Token aa_func10(char lexeme[])
 {
@@ -540,26 +531,13 @@ Token aa_func10(char lexeme[])
 	return t;
 }
 
-/* Purpose: Returns an error token with a truncated lexeme as the attribute
-** Author: Daniel Brenot
-** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
-*/
-Token aa_func12(char lexeme[])
-{
-	return aa_table[ESWR](lexeme);
-}
-
 /* Purpose: Returns an error token with a truncated lexeme as the attribute; Retracts the buffer
 ** Author: Daniel Brenot
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
+** Called functions: strlen() , memcpy()
+** Parameters: lexeme: A valid character array containing the lexeme
+** Return Value: A Token containing the truncated lexeme error token
+** Algorithm: Shortens the token if its larger than the specified max length
 */
 Token aa_func13(char lexeme[])
 {
@@ -584,10 +562,10 @@ Token aa_func13(char lexeme[])
 /* Purpose:
 ** Author: John Pilon
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
-** Algorithm:
+** Called functions: 
+** Parameters: lexeme: A valid character array containing the lexeme
+** Return Value: Converts a lexeme into a hexadecimal value token
+** Algorithm: Checks each individual character in the lexeme and converts it to its corresponding hexadecimal value
 */
 long atolh(char * lexeme) {
 	char i, base;  /* counters for base exponent and lexeme index */
@@ -600,12 +578,12 @@ long atolh(char * lexeme) {
 	return hex;
 }
 
-/* Purpose:
+/* Purpose: Checks if the given lexeme is a specified keyword
 ** Author: John Pilon
 ** Version: 1.0
-** Called functions:
-** Parameters:
-** Return Value:
+** Called functions: strcmp()
+** Parameters: lexeme: A valid character array containing the lexeme
+** Return Value: Returns the index of the keyword if it exists; -1 otherwise
 ** Algorithm:
 */
 int iskeyword(char * kw_lexeme) {
